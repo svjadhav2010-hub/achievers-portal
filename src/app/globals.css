@@ -1,1 +1,24 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #010101; /* Forces the deep black */
+  color: #FFFFFF; /* Forces white text */
+}
+/*@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 1, 1, 1;
+  --background-end-rgb: 1, 1, 1;
+}
+
+body {
+  @apply bg-brand-black text-brand-white;
+  margin: 0;
+  padding: 0;
+}*/
