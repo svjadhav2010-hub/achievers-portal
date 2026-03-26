@@ -1,78 +1,375 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function MentorshipDashboard() {
+interface DashboardData {
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: string;
+    joinedAt: string;
+  };
+  stats: {
+    totalMembers: number;
+  };
+}
+
+const MODULES = [
+  { id: 1, title: 'Digital Networking Basics', desc: 'Build your professional digital presence from scratch.', status: 'completed', progress: 100, accent: 'var(--lime)' },
+  { id: 2, title: 'Social Media Optimization (SMO)', desc: 'Master SMO strategies that convert followers into leads.', status: 'in-progress', progress: 60, accent: 'var(--teal)' },
+  { id: 3, title: 'Downline Team Building', desc: 'Learn how to recruit, onboard, and retain your team.', status: 'locked', progress: 0, accent: '#aaa' },
+  { id: 4, title: 'Passive Income Frameworks', desc: 'Build systems that earn while you sleep.', status: 'locked', progress: 0, accent: '#aaa' },
+];
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then(res => res.json())
+      .then(json => {
+        if (json.error) {
+          setError(json.error);
+          router.push('/login');
+        } else {
+          setData(json);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load dashboard.');
+        setLoading(false);
+      });
+  }, []);
+
+  const initials = data?.user.fullName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || '..';
+
+  const joinDate = data?.user.joinedAt
+    ? new Date(data.user.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+
+  const completedModules = MODULES.filter(m => m.status === 'completed').length;
+  const overallProgress = Math.round((completedModules / MODULES.length) * 100);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      <nav className="bg-white border-b p-4">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h2 className="font-bold text-xl text-blue-600">Achievers Portal</h2>
-          <Link href="/directory" className="text-sm text-gray-600 hover:text-blue-600">
-            ← Back to Directory
+    <div className="min-h-screen" style={{ background: 'var(--paper)', fontFamily: 'var(--font-sans)' }}>
+      <style>{`
+        :root {
+          --teal: #00aac8; --teal-light: #e0f6fb;
+          --orange: #f5821f; --orange-light: #fef3e8;
+          --lime: #8dc63f; --ink: #0d0d0d;
+          --paper: #f8f7f4; --paper-warm: #f2f0ec;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .serif { font-family: var(--font-serif); }
+
+        .nav-bar {
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: blur(24px);
+          border-bottom: 1px solid rgba(0,0,0,0.06);
+          padding: 14px 24px;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+
+        .stat-card {
+          background: white;
+          border: 1px solid rgba(0,0,0,0.06);
+          border-radius: 20px;
+          padding: 24px 28px;
+        }
+
+        .module-row {
+          background: white;
+          border: 1px solid rgba(0,0,0,0.06);
+          border-radius: 16px;
+          padding: 20px 24px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .module-row:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 32px -8px rgba(0,0,0,0.08);
+        }
+        .module-row.locked { opacity: 0.5; cursor: not-allowed; }
+
+        .progress-bar-bg {
+          height: 6px;
+          background: rgba(0,0,0,0.07);
+          border-radius: 3px;
+          overflow: hidden;
+          flex: 1;
+        }
+        .progress-bar-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.6s ease;
+        }
+
+        .badge-pill {
+          display: inline-flex;
+          align-items: center;
+          border-radius: 100px;
+          padding: 4px 12px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+          background: var(--orange);
+          color: white;
+          border: none;
+          border-radius: 100px;
+          padding: 12px 28px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+        .btn-primary:hover { background: #e07018; transform: scale(1.03); }
+
+        .btn-ghost {
+          background: transparent;
+          color: var(--ink);
+          border: 1px solid rgba(0,0,0,0.15);
+          border-radius: 100px;
+          padding: 10px 22px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+        .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+        .logout-btn {
+          background: transparent;
+          border: 1px solid rgba(0,0,0,0.12);
+          border-radius: 100px;
+          padding: 8px 18px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #7a7a7a;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .logout-btn:hover { border-color: #e05a5a; color: #e05a5a; }
+
+        @media (max-width: 768px) {
+          .dashboard-grid { grid-template-columns: 1fr !important; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
+      {/* ─── NAV ─── */}
+      <nav className="nav-bar">
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+            <img src="/icon.png" alt="" style={{ height: 32, width: 'auto' }} />
+            <span className="serif" style={{ fontSize: 17, color: 'var(--ink)', letterSpacing: '-0.01em' }}>Achievers Portal</span>
           </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link href="/directory" className="btn-ghost">Member Directory</Link>
+            <button
+              className="logout-btn"
+              onClick={async () => {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+              }}
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </nav>
 
-      <main className="p-8 max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Achiever Dashboard</h1>
-          <p className="text-gray-500">Track your digital entrepreneurship journey.</p>
-        </header>
+      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Training Progress Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="font-bold text-lg mb-4">Training System Modules</h3>
-              <div className="space-y-3">
-                <div className="flex items-center p-4 bg-green-50 rounded-lg border border-green-100">
-                  <div className="flex-1">
-                    <p className="font-semibold text-green-800">1. Digital Networking Basics</p>
-                    <p className="text-xs text-green-600">Completed on March 5</p>
-                  </div>
-                  <span className="text-green-600">✔</span>
-                </div>
-                <div className="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="flex-1">
-                    <p className="font-semibold text-blue-800">2. Social Media Optimization (SMO)</p>
-                    <p className="text-xs text-blue-600">In Progress - 60%</p>
-                  </div>
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="bg-blue-600 h-full w-[60%]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#aaa', fontSize: 15 }}>
+            Loading your dashboard...
           </div>
+        )}
 
-          {/* Mentor/Support Section */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Your Mentor</h3>
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                  SJ
+        {!loading && data && (
+          <>
+            {/* ─── HEADER ─── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20, marginBottom: 40 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal), var(--lime))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 20, flexShrink: 0 }}>
+                  {initials}
                 </div>
                 <div>
-                  <h4 className="font-bold">Swayam Jadhav</h4>
-                  <p className="text-xs text-gray-500">Senior Manager, Nashik</p>
+                  <h1 className="serif" style={{ fontSize: 28, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 4 }}>
+                    Welcome back, {data.user.fullName.split(' ')[0]}!
+                  </h1>
+                  <p style={{ fontSize: 14, color: '#8a8a8a' }}>Member since {joinDate} · {data.user.email}</p>
                 </div>
               </div>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                Book Mentorship Call
-              </button>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--teal-light)', color: 'var(--teal)', borderRadius: 100, padding: '6px 16px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                ● Active Member
+              </div>
             </div>
-            
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white">
-              <h3 className="font-bold mb-2">Daily Training Session</h3>
-              <p className="text-sm text-blue-100 mb-4">Join today's live strategy session at 8:00 PM.</p>
-              <button className="w-full bg-white text-blue-600 py-2 rounded-lg text-sm font-bold">
-                Join Webinar
-              </button>
+
+            {/* ─── STATS STRIP ─── */}
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+              {[
+                { label: 'Community size', val: `${data.stats.totalMembers}`, sub: 'approved members', accent: 'var(--teal)' },
+                { label: 'Modules completed', val: `${completedModules}/${MODULES.length}`, sub: 'training modules', accent: 'var(--orange)' },
+                { label: 'Overall progress', val: `${overallProgress}%`, sub: 'of curriculum', accent: 'var(--lime)' },
+                { label: 'Your role', val: data.user.role, sub: 'access level', accent: '#8a8a8a' },
+              ].map((s, i) => (
+                <div key={i} className="stat-card">
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{s.label}</div>
+                  <div className="serif" style={{ fontSize: 28, letterSpacing: '-0.02em', color: s.accent, marginBottom: 4 }}>{s.val}</div>
+                  <div style={{ fontSize: 12, color: '#aaa' }}>{s.sub}</div>
+                </div>
+              ))}
             </div>
+
+            {/* ─── MAIN GRID ─── */}
+            <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
+
+              {/* ─── TRAINING MODULES ─── */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>Training Modules</h2>
+                  <span style={{ fontSize: 13, color: '#aaa' }}>{completedModules} of {MODULES.length} complete</span>
+                </div>
+
+                {/* Overall progress bar */}
+                <div style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 16, padding: '16px 24px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#5a5a5a', flexShrink: 0 }}>Overall</div>
+                  <div className="progress-bar-bg">
+                    <div className="progress-bar-fill" style={{ width: `${overallProgress}%`, background: 'linear-gradient(90deg, var(--teal), var(--lime))' }} />
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--teal)', flexShrink: 0 }}>{overallProgress}%</div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {MODULES.map((mod, i) => (
+                    <div key={mod.id} className={`module-row${mod.status === 'locked' ? ' locked' : ''}`}>
+                      {/* Number */}
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: mod.status === 'locked' ? '#f0f0f0' : mod.status === 'completed' ? '#f2f9e6' : 'var(--teal-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {mod.status === 'completed'
+                          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8dc63f" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          : mod.status === 'in-progress'
+                          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        }
+                      </div>
+
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: mod.status === 'locked' ? '#aaa' : 'var(--ink)', marginBottom: 3 }}>{mod.title}</div>
+                        <div style={{ fontSize: 12, color: '#aaa', lineHeight: 1.4 }}>{mod.desc}</div>
+                        {mod.status === 'in-progress' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                            <div className="progress-bar-bg" style={{ maxWidth: 160 }}>
+                              <div className="progress-bar-fill" style={{ width: `${mod.progress}%`, background: 'var(--teal)' }} />
+                            </div>
+                            <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 600 }}>{mod.progress}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Status badge */}
+                      <div className="badge-pill" style={{
+                        background: mod.status === 'completed' ? '#f2f9e6' : mod.status === 'in-progress' ? 'var(--teal-light)' : '#f5f5f5',
+                        color: mod.status === 'completed' ? '#8dc63f' : mod.status === 'in-progress' ? 'var(--teal)' : '#bbb',
+                        flexShrink: 0,
+                      }}>
+                        {mod.status === 'completed' ? 'Done' : mod.status === 'in-progress' ? 'In progress' : 'Locked'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ─── SIDEBAR ─── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                {/* Mentor card */}
+                <div className="stat-card">
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>Your Mentor</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal), var(--lime))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16 }}>SJ</div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Swayam Jadhav</div>
+                      <div style={{ fontSize: 12, color: '#8a8a8a' }}>Senior Manager, Nashik</div>
+                    </div>
+                  </div>
+                  <a
+                    href="https://wa.me/9146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!"
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '11px' }}
+                  >
+                    Book Mentorship Call
+                  </a>
+                </div>
+
+                {/* Daily session card */}
+                <div style={{ background: '#0d0d0d', borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,170,200,0.2) 0%, transparent 70%)' }} />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Daily Session</div>
+                    <h3 style={{ fontSize: 17, fontWeight: 600, color: 'white', marginBottom: 6, lineHeight: 1.3 }}>Live Strategy Session</h3>
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.5 }}>Join today's live training at 8:00 PM on Google Meet.</p>
+                    <a href="#" className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '11px', background: 'var(--teal)' }}>
+                      Join Webinar →
+                    </a>
+                  </div>
+                </div>
+
+                {/* Quick links */}
+                <div className="stat-card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Quick Links</div>
+                  {[
+                    { label: 'Member Directory', href: '/directory', icon: '👥' },
+                    { label: 'Upcoming Events', href: '/events', icon: '📅' },
+                    { label: 'Contact Support', href: '/contact', icon: '💬' },
+                  ].map((link, i) => (
+                    <Link key={i} href={link.href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: 'var(--paper)', textDecoration: 'none', color: 'var(--ink)', fontSize: 14, fontWeight: 500, transition: 'background 0.15s' }}>
+                      <span>{link.icon}</span>
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          </>
+        )}
+
+        {!loading && error && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#e05a5a', fontSize: 15 }}>
+            {error} — <Link href="/login" style={{ color: 'var(--teal)' }}>Login again</Link>
           </div>
-        </div>
+        )}
+
       </main>
     </div>
   );

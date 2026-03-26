@@ -3,84 +3,42 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 type FormStatus = 'idle' | 'sending' | 'success' | 'error';
-console.log("Service ID:", process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID);
-// ─── EmailJS config ───────────────────────────────────────────────────────────
-// 1. Sign up free at https://www.emailjs.com
-// 2. Create a service (Gmail / Outlook / etc.) → copy the Service ID
-// 3. Create an email template → copy the Template ID
-//    Template variables used: {{from_name}}, {{from_email}}, {{phone}},
-//                             {{subject}}, {{message}}, {{to_name}}
-// 4. Copy your Public Key from Account → API Keys
-// 5. Add all three to .env.local (see .env.local.example in project root)
-// ─────────────────────────────────────────────────────────────────────────────
-const EMAILJS_SERVICE_ID  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID  ?? '';
-const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? '';
-const EMAILJS_PUBLIC_KEY  = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY  ?? '';
 
 export default function ContactPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<FormStatus>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: 'General Enquiry',
-    message: '',
-  });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: 'General Enquiry', message: '' });
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  // Lazy-load EmailJS SDK only on the client
-  const sendEmail = async () => {
-    const emailjs = (await import('@emailjs/browser')).default;
-    return emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_ID,
-      {
-        from_name: form.name,
-        from_email: form.email,
-        phone:      form.phone || 'Not provided',
-        subject:    form.subject,
-        message:    form.message,
-        to_name:    'Achievers Club Nashik',
-      },
-      EMAILJS_PUBLIC_KEY,
-    );
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
-
-    // Guard: warn if env vars are missing (dev-mode safety net)
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-      setErrorMsg(
-        'EmailJS is not configured yet. Add NEXT_PUBLIC_EMAILJS_* keys to .env.local and restart the dev server.'
-      );
-      setFormStatus('error');
-      return;
-    }
-
     setFormStatus('sending');
+
     try {
-      await sendEmail();
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong.');
+      }
+
       setFormStatus('success');
-    } catch (err) {
-      console.error('EmailJS error:', err);
-      setErrorMsg(
-        'Something went wrong sending your message. Please try WhatsApp or email us directly.'
-      );
+    } catch (error: any) {
       setFormStatus('error');
+      console.error('Contact form error:', error.message);
     }
   };
 
@@ -95,6 +53,7 @@ export default function ContactPage() {
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .serif { font-family: var(--font-serif); }
+
         .nav-pill { background: rgba(255,255,255,0.85); backdrop-filter: blur(24px); border: 1px solid rgba(0,0,0,0.07); border-radius: 100px; }
         .mobile-drawer { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13,13,13,0.97); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; padding: 40px 24px; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1); }
         .mobile-drawer.open { transform: translateX(0); }
@@ -106,6 +65,7 @@ export default function ContactPage() {
         .hamburger.open span:nth-child(2) { opacity: 0; }
         .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background: white; }
         @media (max-width: 768px) { .desktop-nav-links { display: none !important; } .desktop-nav-actions { display: none !important; } .hamburger { display: flex !important; } }
+
         .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-light); color: var(--teal); border: 1px solid rgba(0,170,200,0.2); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
         .badge-orange { background: var(--orange-light); color: var(--orange); border-color: rgba(245,130,31,0.2); }
         .btn-primary { background: var(--orange); color: white; border: none; border-radius: 100px; padding: 16px 36px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; letter-spacing: -0.01em; }
@@ -115,27 +75,48 @@ export default function ContactPage() {
         .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
         .section-divider { width: 48px; height: 3px; background: linear-gradient(90deg, var(--teal), var(--lime)); border-radius: 2px; margin-bottom: 24px; }
         .hr-gradient { border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent); }
+
+        /* Form */
         .form-field { display: flex; flex-direction: column; gap: 8px; }
         .form-label { font-size: 13px; font-weight: 600; color: #3a3a3a; }
-        .form-input { width: 100%; padding: 14px 18px; border: 1px solid rgba(0,0,0,0.12); border-radius: 14px; font-size: 15px; font-family: var(--font-sans); color: var(--ink); background: white; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-input {
+          width: 100%; padding: 14px 18px;
+          border: 1px solid rgba(0,0,0,0.12);
+          border-radius: 14px;
+          font-size: 15px;
+          font-family: var(--font-sans);
+          color: var(--ink);
+          background: white;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
         .form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,170,200,0.1); }
         .form-input::placeholder { color: #bbb; }
         textarea.form-input { resize: vertical; min-height: 140px; line-height: 1.6; }
         select.form-input { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+
+        /* Contact info card */
         .info-card { background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 24px 28px; display: flex; align-items: flex-start; gap: 16px; transition: transform 0.3s, box-shadow 0.3s; }
         .info-card:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -8px rgba(0,0,0,0.08); }
         .info-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+
+        /* Social pill */
         .social-pill { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 100px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--ink); transition: all 0.2s; }
         .social-pill:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-2px); }
+
+        /* Success state */
         .success-box { background: #f0fdf4; border: 1px solid rgba(34,197,94,0.2); border-radius: 20px; padding: 48px 40px; text-align: center; }
-        .error-banner { background: #fff5f5; border: 1px solid rgba(220,38,38,0.2); border-radius: 14px; padding: 14px 18px; font-size: 14px; color: #dc2626; line-height: 1.5; }
+
+        /* WhatsApp CTA card */
         .wa-card { background: #25D366; border-radius: 24px; padding: 36px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+        /* WhatsApp FAB */
         .wa-fab-wrapper { position: fixed; bottom: 28px; right: 28px; display: flex; align-items: center; gap: 10px; z-index: 150; }
         .wa-fab { width: 58px; height: 58px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(37,211,102,0.45); cursor: pointer; text-decoration: none; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s; }
         .wa-fab:hover { transform: scale(1.1); box-shadow: 0 12px 32px rgba(37,211,102,0.55); }
         .wa-fab-label { background: white; color: #0d0d0d; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 100px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); white-space: nowrap; opacity: 0; transform: translateX(8px); transition: all 0.25s; pointer-events: none; }
         .wa-fab-wrapper:hover .wa-fab-label { opacity: 1; transform: translateX(0); }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 768px) {
           .contact-grid { grid-template-columns: 1fr !important; }
           .form-row { grid-template-columns: 1fr !important; }
@@ -205,13 +186,7 @@ export default function ContactPage() {
                     Thanks for reaching out. Our team will get back to you within 24 hours. In the meantime, feel free to explore our community.
                   </p>
                   <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      className="btn-primary"
-                      onClick={() => {
-                        setFormStatus('idle');
-                        setForm({ name: '', email: '', phone: '', subject: 'General Enquiry', message: '' });
-                      }}
-                    >
+                    <button className="btn-primary" onClick={() => { setFormStatus('idle'); setForm({ name: '', email: '', phone: '', subject: 'General Enquiry', message: '' }); }}>
                       Send another message
                     </button>
                     <Link href="/register" className="btn-ghost">Join the community →</Link>
@@ -223,13 +198,6 @@ export default function ContactPage() {
                     <h2 className="serif" style={{ fontSize: 28, letterSpacing: '-0.02em', marginBottom: 6 }}>Send us a message</h2>
                     <p style={{ fontSize: 14, color: '#8a8a8a', fontWeight: 300 }}>We read every message and respond personally.</p>
                   </div>
-
-                  {/* Error banner */}
-                  {formStatus === 'error' && (
-                    <div className="error-banner">
-                      ⚠️ {errorMsg}
-                    </div>
-                  )}
 
                   <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div className="form-field">
@@ -253,7 +221,7 @@ export default function ContactPage() {
                         <option>General Enquiry</option>
                         <option>Joining the Community</option>
                         <option>Mentorship</option>
-                        <option>Events &amp; Training</option>
+                        <option>Events & Training</option>
                         <option>Partnership</option>
                         <option>Other</option>
                       </select>
@@ -265,27 +233,34 @@ export default function ContactPage() {
                     <textarea name="message" required value={form.message} onChange={handleChange} className="form-input" placeholder="Tell us what you'd like to know..." />
                   </div>
 
+                  {formStatus === 'error' && (
+                    <div style={{ background: '#fff3f3', border: '1px solid rgba(220,53,69,0.2)', borderRadius: 12, padding: '14px 18px', fontSize: 14, color: '#dc3545', fontWeight: 500 }}>
+                      Something went wrong. Please try again or contact us on WhatsApp.
+                    </div>
+                  )}
+
                   <button type="submit" className="btn-primary" disabled={formStatus === 'sending'} style={{ alignSelf: 'flex-start', padding: '14px 36px', fontSize: 15 }}>
                     {formStatus === 'sending' ? (
                       <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
-                          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                        </svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                         Sending…
                       </>
                     ) : 'Send message →'}
                   </button>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </form>
               )}
             </div>
 
             {/* ─── RIGHT SIDEBAR ─── */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Contact info cards */}
               {[
-                { icon: '📍', iconBg: 'var(--teal-light)',   label: 'Location',      value: 'Nashik, Maharashtra',     sub: 'India — 422001' },
-                { icon: '📧', iconBg: 'var(--orange-light)', label: 'Email',         value: 'hello@achieversnashik.in', sub: 'We reply within 24 hours' },
-                { icon: '📞', iconBg: '#f2f9e6',             label: 'Phone',         value: '+91 91465 31857',          sub: 'Mon – Sat, 10 AM – 7 PM' },
-                { icon: '🕐', iconBg: '#fff3f3',             label: 'Response time', value: 'Under 24 hours',           sub: 'Usually much faster' },
+                { icon: '📍', iconBg: 'var(--teal-light)', label: 'Location', value: 'Nashik, Maharashtra', sub: 'India — 422001' },
+                { icon: '📧', iconBg: 'var(--orange-light)', label: 'Email', value: 'hello@achieversnashik.in', sub: 'We reply within 24 hours' },
+                { icon: '📞', iconBg: '#f2f9e6', label: 'Phone', value: '+91 XXXXX XXXXX', sub: 'Mon – Sat, 10 AM – 7 PM' },
+                { icon: '🕐', iconBg: '#fff3f3', label: 'Response time', value: 'Under 24 hours', sub: 'Usually much faster' },
               ].map((item, i) => (
                 <div key={i} className="info-card">
                   <div className="info-icon" style={{ background: item.iconBg }}>{item.icon}</div>
@@ -297,6 +272,7 @@ export default function ContactPage() {
                 </div>
               ))}
 
+              {/* WhatsApp quick contact card */}
               <div className="wa-card">
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Fastest response</div>
@@ -304,7 +280,7 @@ export default function ContactPage() {
                   <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.5 }}>Get a reply in minutes, not hours.</p>
                 </div>
                 <a
-                  href="https://wa.me/919146531857?text=Hi%2C%20I%20have%20a%20question%20about%20the%20Achievers%20Club%20Nashik!"
+                  href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20have%20a%20question%20about%20the%20Achievers%20Club%20Nashik!"
                   target="_blank" rel="noopener noreferrer"
                   style={{ background: 'white', color: '#25D366', borderRadius: 100, padding: '12px 24px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
@@ -316,15 +292,16 @@ export default function ContactPage() {
                 </a>
               </div>
 
+              {/* Social links */}
               <div style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 20, padding: '24px 28px' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16 }}>Follow us</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { label: 'Instagram', handle: '@achieversnashik',      href: 'https://instagram.com/achieversnashik', icon: '📸' },
-                    { label: 'YouTube',   handle: 'Achievers Club Nashik', href: '#',                                     icon: '▶' },
-                    { label: 'LinkedIn',  handle: 'The Achievers Club',    href: '#',                                     icon: '💼' },
+                    { label: 'Instagram', handle: '@achieversnashik', color: '#E1306C', icon: '📸' },
+                    { label: 'YouTube', handle: 'Achievers Club Nashik', color: '#FF0000', icon: '▶' },
+                    { label: 'LinkedIn', handle: 'The Achievers Club', color: '#0077B5', icon: '💼' },
                   ].map((s, i) => (
-                    <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" className="social-pill">
+                    <a key={i} href="#" className="social-pill">
                       <span style={{ fontSize: 16 }}>{s.icon}</span>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600 }}>{s.label}</div>
@@ -334,6 +311,7 @@ export default function ContactPage() {
                   ))}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -368,6 +346,7 @@ export default function ContactPage() {
           </svg>
         </a>
       </div>
+
     </div>
   );
 }

@@ -425,7 +425,7 @@ export default function HomePage() {
       <div className="wa-fab-wrapper">
         <div className="wa-fab-label">Chat with us on WhatsApp</div>
         <a
-          href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
+          href="https://wa.me/9146531857?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
           target="_blank"
           rel="noopener noreferrer"
           className="wa-fab"

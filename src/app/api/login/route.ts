@@ -40,12 +40,16 @@ export async function POST(request: Request) {
     // 🔴 NEW: Wait for the cookie store to resolve, THEN set the cookie
     const cookieStore = await cookies();
     
-    cookieStore.set('userRole', user.role, {
-      httpOnly: true, // Prevents hackers from reading the cookie via JavaScript
-      secure: process.env.NODE_ENV === 'production', // Requires HTTPS in production
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // Wristband expires in 1 week
-    });
+    const cookieOpts = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+      maxAge: 60 * 60 * 24 * 7,
+    };
+
+    cookieStore.set('userRole', user.role, cookieOpts);
+    cookieStore.set('userId', user.id, cookieOpts);
+    cookieStore.set('userName', user.fullName, cookieOpts);
 
     // 4. Success! Return the user data (excluding the password hash) to the frontend
     return NextResponse.json({
