@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers'; // 👈 Add this exact line
+import { cookies } from 'next/headers';
+import { signToken } from '@/lib/jwt';
 
 export async function POST(request: Request) {
   try {
@@ -12,8 +13,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
-    // 1. Query the database for the user using the new 'Users' table
-    // We use type 'any' here to easily extract the rows from the mysql2 array
     const [rows]: any = await pool.query(
       `SELECT id, fullName, email, password_hash, role FROM Users WHERE email = ?`,
       [email]
@@ -21,44 +20,42 @@ export async function POST(request: Request) {
 
     const users = rows as any[];
 
-    // 2. If the array is empty, the email doesn't exist
     if (users.length === 0) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
     const user = users[0];
 
-    // 3. Security: Compare the plain-text password to the encrypted hash in TiDB
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-
     if (!isPasswordValid) {
-      // Always return the exact same generic error message for security
-      // so hackers can't guess if an email exists in your system
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
-    // 🔴 NEW: Wait for the cookie store to resolve, THEN set the cookie
+    // Create a signed JWT with user info embedded
+    const token = await signToken({
+      userId: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    });
+
+    // Store as a single signed token cookie — replaces the 3 plain cookies
     const cookieStore = await cookies();
-    
-    const cookieOpts = {
+    cookieStore.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax' as const,
-      maxAge: 60 * 60 * 24 * 7,
-    };
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
 
-    cookieStore.set('userRole', user.role, cookieOpts);
-    cookieStore.set('userId', user.id, cookieOpts);
-    cookieStore.set('userName', user.fullName, cookieOpts);
-
-    // 4. Success! Return the user data (excluding the password hash) to the frontend
     return NextResponse.json({
       success: true,
       user: {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
-        role: user.role, 
+        role: user.role,
       },
       message: 'Login successful!',
     });

@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/jwt';
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const userId = cookieStore.get('userId')?.value;
-    const userName = cookieStore.get('userName')?.value;
-    const userRole = cookieStore.get('userRole')?.value;
+    const token = cookieStore.get('token')?.value;
 
-    if (!userId) {
+    if (!token) {
       return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
     }
 
-    // Fetch user details from DB
+    // Verify the JWT signature — rejects tampered tokens
+    const payload = await verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid or expired session.' }, { status: 401 });
+    }
+
+    // Fetch fresh user data from DB (don't fully trust token data for sensitive info)
     const [rows]: any = await pool.query(
       `SELECT id, fullName, email, role, created_at FROM Users WHERE id = ?`,
-      [userId]
+      [payload.userId]
     );
 
     const user = rows[0];
@@ -24,7 +29,7 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found.' }, { status: 404 });
     }
 
-    // Fetch total approved member count for community stats
+    // Fetch total approved member count
     const [countRows]: any = await pool.query(
       `SELECT COUNT(*) as total FROM Users WHERE role = 'MEMBER'`
     );
@@ -38,9 +43,7 @@ export async function GET() {
         role: user.role,
         joinedAt: user.created_at,
       },
-      stats: {
-        totalMembers,
-      },
+      stats: { totalMembers },
     });
 
   } catch (error) {

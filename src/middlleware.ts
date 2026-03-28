@@ -1,34 +1,48 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-// Strict allowlist — only these exact strings are valid roles
-const VALID_ROLES = new Set(['ADMIN', 'MEMBER', 'PENDING', 'REJECTED']);
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'achievers-club-nashik-secret-key-32chars!!'
+);
 
-export function middleware(request: NextRequest) {
-  const rawRole = request.cookies.get('userRole')?.value;
+async function getRole(request: NextRequest): Promise<string | null> {
+  const token = request.cookies.get('token')?.value;
+  if (!token) return null;
+
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    const role = payload.role as string;
+    // Strict allowlist
+    if (!['ADMIN', 'MEMBER', 'PENDING', 'REJECTED'].includes(role)) return null;
+    return role;
+  } catch {
+    // Token is invalid, expired, or tampered — reject it
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const role = await getRole(request);
 
-  // Reject tampered or missing cookies immediately
-  const userRole = rawRole && VALID_ROLES.has(rawRole) ? rawRole : null;
-
-  // Protect /admin — only ADMIN role allowed
+  // Protect /admin — only ADMIN
   if (path.startsWith('/admin')) {
-    if (userRole !== 'ADMIN') {
+    if (role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  // Protect /dashboard — only approved MEMBER or ADMIN allowed
-  // PENDING and REJECTED are explicitly blocked even if cookie exists
+  // Protect /dashboard — MEMBER or ADMIN only
   if (path.startsWith('/dashboard')) {
-    if (userRole !== 'MEMBER' && userRole !== 'ADMIN') {
+    if (role !== 'MEMBER' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  // Protect /directory — same as dashboard
+  // Protect /directory — MEMBER or ADMIN only
   if (path.startsWith('/directory')) {
-    if (userRole !== 'MEMBER' && userRole !== 'ADMIN') {
+    if (role !== 'MEMBER' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
