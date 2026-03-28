@@ -375,7 +375,8 @@ export default function HomePage() {
           .blueprint-grid > div:first-child { position: static !important; }
           .stats-grid { grid-template-columns: 1fr 1fr !important; }
           .bento-grid { grid-template-columns: 1fr !important; }
-          .bento-grid .card-lift[style*="gridColumn"] { grid-column: auto !important; flex-direction: column !important; gap: 24px !important; padding: 36px 28px !important; }
+          .bento-grid { grid-template-columns: 1fr !important; }
+          .remote-card { flex-direction: column !important; align-items: flex-start !important; gap: 24px !important; padding: 36px 28px !important; grid-column: auto !important; }
           .testi-grid { grid-template-columns: 1fr !important; }
           .testi-grid > div:nth-child(2) { margin-top: 0 !important; aspect-ratio: 16/9 !important; }
           .testi-grid > div:nth-child(3) { margin-top: 0 !important; }
@@ -387,7 +388,7 @@ export default function HomePage() {
       {/* ─── NAVIGATION ─── */}
       {/* ─── MOBILE DRAWER ─── */}
       <div className={`mobile-drawer ${menuOpen ? 'open' : ''}`}>
-        {(['#services', '#benefits', '#community', '/about', '/events', '#contact'] as string[]).map((href, i) => (
+        {(['#services', '#benefits', '#community', '/about', '/events', '/contact'] as string[]).map((href, i) => (
           <a key={i} href={href} className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
             {['Services', 'Why Join', 'Stories', 'About', 'Events', 'Contact'][i]}
           </a>
@@ -436,7 +437,7 @@ export default function HomePage() {
       <div className="wa-fab-wrapper">
         <div className="wa-fab-label">Chat with us on WhatsApp</div>
         <a
-          href="https://wa.me/9146531857?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
+          href="https://wa.me/919146531857?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
           target="_blank"
           rel="noopener noreferrer"
           className="wa-fab"
@@ -678,7 +679,7 @@ export default function HomePage() {
             </div>
 
             {/* Card 3: Dark - full width */}
-            <div className="card-lift" style={{ background: '#0d0d0d', borderRadius: 28, padding: '52px', gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 48, position: 'relative', overflow: 'hidden' }}>
+            <div className="card-lift remote-card" style={{ background: '#0d0d0d', borderRadius: 28, padding: '52px', gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 48, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '50%', left: '30%', transform: 'translate(-50%, -50%)', width: 600, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,170,200,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <div className="badge" style={{ marginBottom: 20, background: 'rgba(0,170,200,0.1)', borderColor: 'rgba(0,170,200,0.25)', color: 'var(--teal)' }}>100% Remote</div>

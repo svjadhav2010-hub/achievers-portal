@@ -121,9 +121,10 @@ export default function ContactPage() {
           .contact-grid { grid-template-columns: 1fr !important; }
           .form-row { grid-template-columns: 1fr !important; }
           .wa-card { flex-direction: column !important; text-align: center !important; }
-          section { padding: 60px 0 !important; }
-          .form-card { padding: 32px 24px !important; border-radius: 20px !important; }
-          h1 { font-size: clamp(2.5rem, 8vw, 3rem) !important; }
+          .form-card { padding: 28px 20px !important; border-radius: 20px !important; }
+          .contact-hero-section { padding-top: 100px !important; padding-bottom: 40px !important; }
+          .contact-hero-row { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; margin-bottom: 36px !important; }
+          .contact-hero-row p { max-width: 100% !important; }
         }
       `}</style>
 
@@ -162,11 +163,11 @@ export default function ContactPage() {
       </nav>
 
       {/* ─── HERO ─── */}
-      <section style={{ paddingTop: 140, paddingBottom: 80, background: 'var(--paper)' }}>
+      <section className="contact-hero-section" style={{ paddingTop: 140, paddingBottom: 80, background: 'var(--paper)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
           <div className="section-divider" />
           <div className="badge" style={{ marginBottom: 20 }}>Get in touch</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 24, marginBottom: 64 }}>
+          <div className="contact-hero-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 24, marginBottom: 64 }}>
             <h1 className="serif" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', lineHeight: 1.05, letterSpacing: '-0.03em' }}>
               We'd love to<br />
               <em style={{ color: 'var(--teal)' }}>hear from you.</em>
