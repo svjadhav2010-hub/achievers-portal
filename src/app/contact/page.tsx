@@ -120,7 +120,10 @@ export default function ContactPage() {
         @media (max-width: 768px) {
           .contact-grid { grid-template-columns: 1fr !important; }
           .form-row { grid-template-columns: 1fr !important; }
-          .wa-card { flex-direction: column; text-align: center; }
+          .wa-card { flex-direction: column !important; text-align: center !important; }
+          section { padding: 60px 0 !important; }
+          .form-card { padding: 32px 24px !important; border-radius: 20px !important; }
+          h1 { font-size: clamp(2.5rem, 8vw, 3rem) !important; }
         }
       `}</style>
 
@@ -177,7 +180,7 @@ export default function ContactPage() {
           <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 40, alignItems: 'start' }}>
 
             {/* ─── FORM ─── */}
-            <div style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 28, padding: '48px 44px' }}>
+            <div className="form-card" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 28, padding: '48px 44px' }}>
               {formStatus === 'success' ? (
                 <div className="success-box">
                   <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
@@ -259,7 +262,7 @@ export default function ContactPage() {
               {[
                 { icon: '📍', iconBg: 'var(--teal-light)', label: 'Location', value: 'Nashik, Maharashtra', sub: 'India — 422001' },
                 { icon: '📧', iconBg: 'var(--orange-light)', label: 'Email', value: 'hello@achieversnashik.in', sub: 'We reply within 24 hours' },
-                { icon: '📞', iconBg: '#f2f9e6', label: 'Phone', value: '+91 XXXXX XXXXX', sub: 'Mon – Sat, 10 AM – 7 PM' },
+                { icon: '📞', iconBg: '#f2f9e6', label: 'Phone', value: '+91 91465 31857', sub: 'Mon – Sat, 10 AM – 7 PM' },
                 { icon: '🕐', iconBg: '#fff3f3', label: 'Response time', value: 'Under 24 hours', sub: 'Usually much faster' },
               ].map((item, i) => (
                 <div key={i} className="info-card">
@@ -280,7 +283,7 @@ export default function ContactPage() {
                   <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.5 }}>Get a reply in minutes, not hours.</p>
                 </div>
                 <a
-                  href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20have%20a%20question%20about%20the%20Achievers%20Club%20Nashik!"
+                  href="https://wa.me/919146531857?text=Hi%2C%20I%20have%20a%20question%20about%20the%20Achievers%20Club%20Nashik!"
                   target="_blank" rel="noopener noreferrer"
                   style={{ background: 'white', color: '#25D366', borderRadius: 100, padding: '12px 24px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', flexShrink: 0 }}
                 >

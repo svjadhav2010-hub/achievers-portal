@@ -189,6 +189,9 @@ export default function EventsPage() {
           .featured-card { grid-template-columns: 1fr !important; gap: 32px !important; padding: 36px 28px !important; }
           .events-grid { grid-template-columns: 1fr !important; }
           .countdown-row { justify-content: flex-start !important; }
+          .filter-tab { padding: 7px 16px !important; font-size: 13px !important; }
+          section { padding: 60px 0 !important; }
+          .stay-updated-inner { padding: 52px 28px !important; border-radius: 24px !important; }
         }
       `}</style>
 
@@ -366,7 +369,7 @@ export default function EventsPage() {
       {/* ─── STAY UPDATED ─── */}
       <section style={{ padding: '80px 0', background: 'var(--paper)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ background: '#0d0d0d', borderRadius: 36, padding: '80px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div className="stay-updated-inner" style={{ background: '#0d0d0d', borderRadius: 36, padding: '80px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: 2, background: 'linear-gradient(90deg, transparent, var(--teal), var(--lime), transparent)' }} />
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 250, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,170,200,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>

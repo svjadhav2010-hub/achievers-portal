@@ -368,8 +368,19 @@ export default function HomePage() {
 
         /* Mobile */
         @media (max-width: 768px) {
-          section { padding: 80px 0; }
-          .hero-title { font-size: clamp(2.8rem, 10vw, 4rem) !important; }
+          section { padding: 72px 0; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .hero-grid > div:last-child { display: none !important; }
+          .blueprint-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .blueprint-grid > div:first-child { position: static !important; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .bento-grid { grid-template-columns: 1fr !important; }
+          .bento-grid .card-lift[style*="gridColumn"] { grid-column: auto !important; flex-direction: column !important; gap: 24px !important; padding: 36px 28px !important; }
+          .testi-grid { grid-template-columns: 1fr !important; }
+          .testi-grid > div:nth-child(2) { margin-top: 0 !important; aspect-ratio: 16/9 !important; }
+          .testi-grid > div:nth-child(3) { margin-top: 0 !important; }
+          .cta-gradient { padding: 60px 28px !important; border-radius: 24px !important; }
+          .reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
         }
       `}</style>
 
@@ -445,7 +456,7 @@ export default function HomePage() {
         <div style={{ position: 'absolute', bottom: '10%', left: '0%', width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,130,31,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
             
             {/* Left: Copy */}
             <div>
@@ -549,7 +560,7 @@ export default function HomePage() {
       <section id="services" style={{ background: 'var(--paper)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 80, alignItems: 'start' }}>
+          <div className="blueprint-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 80, alignItems: 'start' }}>
             {/* Left sticky label */}
             <div style={{ position: 'sticky', top: 140 }}>
               <div className="section-divider" />
@@ -616,7 +627,7 @@ export default function HomePage() {
       {/* ─── STATS ─── */}
       <section style={{ background: 'var(--paper)', padding: '80px 0' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'rgba(0,0,0,0.06)', borderRadius: 24, overflow: 'hidden' }}>
+          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'rgba(0,0,0,0.06)', borderRadius: 24, overflow: 'hidden' }}>
             {[
               { val: '500+', label: 'Active achievers', sub: 'Nashik branch' },
               { val: '₹30k', label: 'Avg. monthly target', sub: 'Per member' },
@@ -647,7 +658,7 @@ export default function HomePage() {
           </div>
 
           {/* Bento grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'auto auto', gap: 20 }}>
+          <div className="bento-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'auto auto', gap: 20 }}>
             
             {/* Card 1: Big */}
             <div className="card-lift" style={{ background: 'white', borderRadius: 28, padding: '56px 52px', border: '1px solid rgba(0,0,0,0.06)', position: 'relative', overflow: 'hidden' }}>
@@ -703,7 +714,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, alignItems: 'start' }}>
+          <div className="testi-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, alignItems: 'start' }}>
             
             {/* Review 1 */}
             <div className="testi-card card-lift" style={{ marginTop: 0 }}>

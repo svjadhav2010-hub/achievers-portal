@@ -180,6 +180,10 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .dashboard-grid { grid-template-columns: 1fr !important; }
           .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .nav-bar { padding: 12px 16px !important; }
+          .nav-bar .btn-ghost { display: none !important; }
+          main { padding: 24px 16px !important; }
+          .module-row { gap: 12px !important; padding: 16px !important; }
         }
       `}</style>
 
@@ -322,7 +326,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <a
-                    href="https://wa.me/9146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!"
+                    href="https://wa.me/91XXXXXXXXXX?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!"
                     target="_blank" rel="noopener noreferrer"
                     className="btn-primary"
                     style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '11px' }}
