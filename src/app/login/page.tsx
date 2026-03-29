@@ -59,6 +59,8 @@ export default function LoginPage() {
       setTimeout(() => {
         if (userRole === 'ADMIN') {
           router.push('/admin');
+        } else if (userRole === 'MENTOR') {
+          router.push('/dashboard'); // Mentors get same portal as members
         } else {
           router.push('/dashboard'); // Standard Members go to the training portal
         }

@@ -31,7 +31,7 @@ export async function GET() {
 
     // Fetch total approved member count
     const [countRows]: any = await pool.query(
-      `SELECT COUNT(*) as total FROM Users WHERE role = 'MEMBER'`
+      `SELECT COUNT(*) as total FROM Users WHERE role IN ('MEMBER','MENTOR')`
     );
     const totalMembers = countRows[0]?.total || 0;
 

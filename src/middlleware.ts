@@ -35,14 +35,14 @@ export async function middleware(request: NextRequest) {
 
   // Protect /dashboard — MEMBER or ADMIN only
   if (path.startsWith('/dashboard')) {
-    if (role !== 'MEMBER' && role !== 'ADMIN') {
+    if (role !== 'MEMBER' && role !== 'MENTOR' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
   // Protect /directory — MEMBER or ADMIN only
   if (path.startsWith('/directory')) {
-    if (role !== 'MEMBER' && role !== 'ADMIN') {
+    if (role !== 'MEMBER' && role !== 'MENTOR' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }

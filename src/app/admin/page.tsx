@@ -1,194 +1,477 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // 👈 Add this line
 
-// Define the exact shape of the data coming from our TiDB database
-interface Application {
-  id: string;
-  fullName: string;
-  email: string;
-  startup_name: string | null;
-  has_pan_card: number;
-  created_at: string;
+interface Member { id: string; fullName: string; email: string; role: string; referred_by: string | null; created_at: string; }
+interface Task { id: string; title: string; status: string; due_date: string | null; created_at: string; fullName: string; email: string; }
+interface Application { id: string; fullName: string; email: string; startup_name: string | null; has_pan_card: number; created_at: string; }
+interface Stats { total: number; pending: number; rejected: number; tasks_done: number; tasks_total: number; }
+
+type Tab = 'overview' | 'hierarchy' | 'tasks' | 'applications';
+
+function buildTree(members: Member[]) {
+  const map: Record<string, Member & { children: any[] }> = {};
+  const roots: any[] = [];
+  members.forEach(m => { map[m.id] = { ...m, children: [] }; });
+  members.forEach(m => {
+    if (m.referred_by && map[m.referred_by]) map[m.referred_by].children.push(map[m.id]);
+    else roots.push(map[m.id]);
+  });
+  return roots;
 }
 
-export default function CEODashboard() {
+function TreeNode({ node, depth = 0 }: { node: any; depth?: number }) {
+  const [open, setOpen] = useState(depth < 2);
+  const hasChildren = node.children.length > 0;
+  const colors = ['var(--teal)', 'var(--orange)', '#8dc63f', '#a78bfa'];
+  const color = colors[depth % colors.length];
+  const bgs = ['var(--teal-light)', 'var(--orange-light)', '#f2f9e6', '#f3f0ff'];
+  const bg = bgs[depth % bgs.length];
+
+  return (
+    <div style={{ marginLeft: depth > 0 ? 28 : 0 }}>
+      <div
+        onClick={() => hasChildren && setOpen(!open)}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 14, cursor: hasChildren ? 'pointer' : 'default', background: 'white', border: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, transition: 'all 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+        onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')}
+        onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)')}
+      >
+        <div style={{ width: 22, height: 22, borderRadius: 6, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color, flexShrink: 0, fontWeight: 700 }}>
+          {hasChildren ? (open ? '▾' : '▸') : '·'}
+        </div>
+        <div style={{ width: 34, height: 34, borderRadius: '50%', background: bg, border: `1.5px solid ${color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color, flexShrink: 0 }}>
+          {node.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#0d0d0d', lineHeight: 1.3 }}>{node.fullName}</div>
+          <div style={{ fontSize: 12, color: '#8a8a8a', marginTop: 1 }}>{node.email}</div>
+        </div>
+        {hasChildren && (
+          <div style={{ fontSize: 11, fontWeight: 700, color, background: bg, borderRadius: 100, padding: '3px 10px', flexShrink: 0 }}>
+            {node.children.length} direct
+          </div>
+        )}
+        <div style={{ fontSize: 11, fontWeight: 700, color: node.role === 'ADMIN' ? 'var(--orange)' : 'var(--teal)', background: node.role === 'ADMIN' ? 'var(--orange-light)' : 'var(--teal-light)', borderRadius: 100, padding: '3px 10px', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
+          {node.role}
+        </div>
+      </div>
+      {open && hasChildren && (
+        <div style={{ borderLeft: `2px solid ${color}33`, marginLeft: 10, paddingLeft: 8, marginBottom: 4 }}>
+          {node.children.map((child: any) => <TreeNode key={child.id} node={child} depth={depth + 1} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CEOCommandCenter() {
+  const [tab, setTab] = useState<Tab>('overview');
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [taskFilter, setTaskFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
 
-  // 1. Fetch the data from our API route as soon as the dashboard loads
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const response = await fetch('/api/admin/applications');
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Failed to fetch data');
-        }
-
-        setApplications(result.data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchApplications();
+    fetch('/api/admin/overview')
+      .then(r => r.json())
+      .then(d => {
+        setStats(d.stats);
+        setMembers(d.members || []);
+        setTasks(d.tasks || []);
+        setApplications(d.applications || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  // 2. NEW: Handle the Approve/Reject button clicks
-  const handleAction = async (userId: string, action: 'APPROVE' | 'REJECT') => {
-    try {
-      // Send the command to your TiDB database via our PATCH route
-      const response = await fetch('/api/admin/applications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to process application');
-      }
-
-      // Instantly remove that user from the screen without reloading the page
-      setApplications((prev) => prev.filter((app) => app.id !== userId));
-      
-      alert(`Success: Applicant has been ${action.toLowerCase()}d.`);
-
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+  const handleAction = async (userId: string, action: 'APPROVE' | 'APPROVE_AS_MENTOR' | 'REJECT') => {
+    const res = await fetch('/api/admin/applications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, action }),
+    });
+    if (res.ok) {
+      setApplications(prev => prev.filter(a => a.id !== userId));
+      setStats(prev => prev ? {
+        ...prev,
+        pending: prev.pending - 1,
+        total: action === 'APPROVE' ? prev.total + 1 : prev.total,
+        rejected: action === 'REJECT' ? prev.rejected + 1 : prev.rejected,
+      } : prev);
     }
   };
 
+  const tree = buildTree(members);
+  const filteredTasks = taskFilter === 'all' ? tasks : tasks.filter(t => t.status === taskFilter);
+  const taskPct = stats ? Math.round((stats.tasks_done / Math.max(stats.tasks_total, 1)) * 100) : 0;
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'hierarchy', label: 'Hierarchy Tree' },
+    { id: 'tasks', label: 'Task Monitor' },
+    { id: 'applications', label: 'Applications' },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      
-      {/* Top Navigation / Header */}
-      <header className="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center sticky top-0 z-10">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">CEO Command Center</h1>
-          <p className="text-sm font-semibold text-slate-500 mt-1">Nashik Branch Analytics & Approvals</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-            Live Data
-          </div>
-          <Link href="/" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">
-            Log Out
-          </Link>
-        </div>
-      </header>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)', fontFamily: 'var(--font-sans)', color: '#0d0d0d' }}>
+      <style>{`
+        :root {
+          --teal: #00aac8; --teal-light: #e0f6fb;
+          --orange: #f5821f; --orange-light: #fef3e8;
+          --lime: #8dc63f; --ink: #0d0d0d;
+          --paper: #f8f7f4; --paper-warm: #f2f0ec;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .serif { font-family: var(--font-serif); }
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-8 py-10">
-        
-        <div className="mb-8 flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Pending Applications</h2>
-            <p className="text-sm text-slate-500 mt-1">Review and approve new members to join your downline.</p>
-          </div>
-          <div className="text-sm font-bold text-slate-400">
-            Total Pending: <span className="text-slate-900">{applications.length}</span>
-          </div>
-        </div>
+        .nav-bar {
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: blur(24px);
+          border-bottom: 1px solid rgba(0,0,0,0.06);
+          padding: 0 32px;
+          position: sticky; top: 0; z-index: 50;
+        }
+        .nav-inner {
+          max-width: 1300px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between;
+          height: 64px;
+        }
 
-        {/* Status Handling: Loading or Error */}
-        {isLoading && (
-          <div className="flex justify-center items-center h-64 bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <p className="text-slate-500 font-bold animate-pulse">Loading secure database...</p>
-          </div>
-        )}
+        .tab-btn {
+          padding: 8px 18px; border-radius: 100px;
+          border: 1px solid transparent;
+          font-size: 13px; font-weight: 500;
+          cursor: pointer; transition: all 0.2s;
+          color: #5a5a5a; background: transparent;
+        }
+        .tab-btn:hover { color: var(--ink); background: var(--paper-warm); }
+        .tab-btn.active { color: var(--ink); background: white; border-color: rgba(0,0,0,0.1); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 
-        {error && (
-          <div className="p-6 bg-red-50 border border-red-100 rounded-2xl text-red-600 font-bold">
-            Error: {error}
-          </div>
-        )}
+        .card {
+          background: white;
+          border: 1px solid rgba(0,0,0,0.06);
+          border-radius: 20px;
+        }
+        .section-divider { width: 48px; height: 3px; background: linear-gradient(90deg, var(--teal), var(--lime)); border-radius: 2px; margin-bottom: 16px; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-light); color: var(--teal); border: 1px solid rgba(0,170,200,0.2); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge-orange { background: var(--orange-light); color: var(--orange); border-color: rgba(245,130,31,0.2); }
 
-        {/* The Data Table */}
-        {!isLoading && !error && applications.length > 0 && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-sm">
-                    <th className="px-6 py-4 font-bold text-slate-600">Applicant Name</th>
-                    <th className="px-6 py-4 font-bold text-slate-600">Contact Email</th>
-                    <th className="px-6 py-4 font-bold text-slate-600">Startup Idea</th>
-                    <th className="px-6 py-4 font-bold text-slate-600">Verification</th>
-                    <th className="px-6 py-4 font-bold text-slate-600 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900">{app.fullName}</div>
-                        <div className="text-xs text-slate-400 font-mono mt-1">ID: {app.id.substring(0, 8)}...</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-slate-600">
-                        {app.email}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-slate-600">
-                        {app.startup_name || <span className="text-slate-400 italic">None provided</span>}
-                      </td>
-                      <td className="px-6 py-4">
-                        {app.has_pan_card ? (
-                          <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-md text-xs font-bold bg-green-50 text-green-700 border border-green-200">
-                            ✅ PAN Verified
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-md text-xs font-bold bg-red-50 text-red-700 border border-red-200">
-                            ❌ Missing
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          
-                          {/* 3. NEW: onClick handlers added to these buttons */}
-                          <button 
-                            onClick={() => handleAction(app.id, 'APPROVE')}
-                            className="px-4 py-2 bg-slate-900 hover:bg-orange-500 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
-                          >
-                            Approve
-                          </button>
-                          
-                          <button 
-                            onClick={() => handleAction(app.id, 'REJECT')}
-                            className="px-4 py-2 bg-white border border-slate-200 hover:bg-red-50 text-slate-700 hover:text-red-600 text-sm font-bold rounded-lg transition-colors"
-                          >
-                            Reject
-                          </button>
+        .btn-primary { background: var(--orange); color: white; border: none; border-radius: 100px; padding: 10px 24px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary:hover { background: #e07018; transform: scale(1.02); }
+        .btn-ghost { background: transparent; color: var(--ink); border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; padding: 10px 22px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
 
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        .approve-btn { background: var(--teal-light); color: var(--teal); border: 1px solid rgba(0,170,200,0.25); border-radius: 10px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .approve-btn:hover { background: var(--teal); color: white; }
+        .reject-btn { background: #fff3f3; color: #e05a5a; border: 1px solid rgba(224,90,90,0.2); border-radius: 10px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .reject-btn:hover { background: #e05a5a; color: white; }
+        .mentor-btn { background: #f3f0ff; color: #7c3aed; border: 1px solid rgba(124,58,237,0.2); border-radius: 10px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .mentor-btn:hover { background: #7c3aed; color: white; }
+
+        .filter-chip { padding: 6px 16px; border-radius: 100px; border: 1px solid rgba(0,0,0,0.1); background: transparent; font-size: 12px; font-weight: 500; color: #5a5a5a; cursor: pointer; transition: all 0.2s; }
+        .filter-chip:hover { border-color: var(--teal); color: var(--teal); }
+        .filter-chip.active { background: #0d0d0d; color: white; border-color: #0d0d0d; font-weight: 600; }
+
+        .hr-gradient { border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent); margin: 32px 0; }
+
+        tr:hover td { background: var(--paper) !important; }
+      `}</style>
+
+      {/* ─── NAV ─── */}
+      <nav className="nav-bar">
+        <div className="nav-inner">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+              <img src="/icon.png" alt="" style={{ height: 32 }} />
+            </Link>
+            <div style={{ width: 1, height: 24, background: 'rgba(0,0,0,0.1)' }} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#0d0d0d', letterSpacing: '-0.01em' }}>CEO Command Center</div>
+              <div style={{ fontSize: 11, color: '#8a8a8a', marginTop: 1 }}>Nashik Branch · Admin</div>
             </div>
           </div>
-        )}
 
-        {/* Empty State */}
-        {!isLoading && !error && applications.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-slate-200 shadow-sm border-dashed">
-            <div className="text-4xl mb-3">📭</div>
-            <h3 className="text-lg font-bold text-slate-900">No pending applications</h3>
-            <p className="text-sm text-slate-500 mt-1">Your review queue is currently empty.</p>
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 4 }}>
+            {TABS.map(t => (
+              <button key={t.id} className={`tab-btn ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+                {t.label}
+                {t.id === 'applications' && applications.length > 0 && (
+                  <span style={{ marginLeft: 6, background: 'var(--orange)', color: 'white', borderRadius: 100, padding: '1px 7px', fontSize: 10, fontWeight: 700 }}>{applications.length}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--teal)', fontWeight: 600 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', display: 'inline-block' }} />
+              Live
+            </div>
+            <button className="btn-ghost" style={{ padding: '7px 18px', fontSize: 12 }}
+              onClick={async () => { await fetch('/api/logout', { method: 'POST' }); window.location.href = '/login'; }}>
+              Log out
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <main style={{ maxWidth: 1300, margin: '0 auto', padding: '40px 32px' }}>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '100px 0', color: '#aaa', fontSize: 15 }}>
+            Loading Command Center...
           </div>
         )}
 
+        {!loading && (
+          <>
+            {/* ─── OVERVIEW ─── */}
+            {tab === 'overview' && stats && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+                {/* Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+                  {[
+                    { label: 'Active Members', val: stats.total, color: 'var(--teal)', bg: 'var(--teal-light)', sub: 'Approved & onboarded' },
+                    { label: 'Pending Review', val: stats.pending, color: 'var(--orange)', bg: 'var(--orange-light)', sub: 'Awaiting approval' },
+                    { label: 'Rejected', val: stats.rejected, color: '#e05a5a', bg: '#fff3f3', sub: 'Declined applications' },
+                    { label: 'Tasks Done', val: stats.tasks_done, color: '#8dc63f', bg: '#f2f9e6', sub: `of ${stats.tasks_total} total` },
+                    { label: 'Completion Rate', val: `${taskPct}%`, color: '#7c3aed', bg: '#f3f0ff', sub: 'Branch productivity' },
+                  ].map((s, i) => (
+                    <div key={i} className="card" style={{ padding: '24px 28px', borderTop: `3px solid ${s.color}` }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>{s.label}</div>
+                      <div className="serif" style={{ fontSize: 40, letterSpacing: '-0.03em', color: s.color, lineHeight: 1, marginBottom: 6 }}>{s.val}</div>
+                      <div style={{ fontSize: 12, color: '#aaa' }}>{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Productivity bar */}
+                <div className="card" style={{ padding: '28px 32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Branch Productivity</div>
+                      <div style={{ fontSize: 13, color: '#8a8a8a' }}>Task completion rate across all members</div>
+                    </div>
+                    <div className="serif" style={{ fontSize: 36, color: '#8dc63f', letterSpacing: '-0.03em' }}>{taskPct}%</div>
+                  </div>
+                  <div style={{ height: 8, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${taskPct}%`, background: 'linear-gradient(90deg, var(--teal), #8dc63f)', borderRadius: 4, transition: 'width 0.8s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: '#aaa' }}>
+                    <span>{stats.tasks_done} completed</span>
+                    <span>{stats.tasks_total - stats.tasks_done} remaining</span>
+                  </div>
+                </div>
+
+                {/* Recent activity + pending */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div className="card" style={{ padding: '24px 28px' }}>
+                    <div className="section-divider" />
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>Recent Task Activity</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {tasks.slice(0, 5).map(t => (
+                        <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.status === 'completed' ? '#8dc63f' : t.status === 'in_progress' ? 'var(--teal)' : '#ddd', flexShrink: 0 }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: '#0d0d0d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+                            <div style={{ fontSize: 11, color: '#8a8a8a', marginTop: 1 }}>{t.fullName}</div>
+                          </div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: t.status === 'completed' ? '#8dc63f' : t.status === 'in_progress' ? 'var(--teal)' : '#bbb', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
+                            {t.status.replace('_', ' ')}
+                          </div>
+                        </div>
+                      ))}
+                      {tasks.length === 0 && <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: '20px 0' }}>No tasks yet</div>}
+                    </div>
+                    <button onClick={() => setTab('tasks')} style={{ marginTop: 16, fontSize: 12, color: 'var(--teal)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View all tasks →</button>
+                  </div>
+
+                  <div className="card" style={{ padding: '24px 28px' }}>
+                    <div className="section-divider" style={{ background: 'linear-gradient(90deg, var(--orange), #f5821f88)' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>Pending Applications</div>
+                      {applications.length > 0 && <span className="badge badge-orange">{applications.length} new</span>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {applications.slice(0, 4).map(app => (
+                        <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--orange-light)', border: '1px solid rgba(245,130,31,0.15)', borderRadius: 12 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--orange)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                            {app.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0d0d' }}>{app.fullName}</div>
+                            <div style={{ fontSize: 11, color: '#8a8a8a' }}>{app.email}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button className="approve-btn" onClick={() => handleAction(app.id, 'APPROVE')}>✓</button>
+                            <button className="reject-btn" onClick={() => handleAction(app.id, 'REJECT')}>✕</button>
+                          </div>
+                        </div>
+                      ))}
+                      {applications.length === 0 && <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: '20px 0' }}>No pending applications</div>}
+                    </div>
+                    {applications.length > 4 && <button onClick={() => setTab('applications')} style={{ marginTop: 16, fontSize: 12, color: 'var(--orange)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View all {applications.length} →</button>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ─── HIERARCHY ─── */}
+            {tab === 'hierarchy' && (
+              <div>
+                <div style={{ marginBottom: 28 }}>
+                  <div className="section-divider" />
+                  <div className="badge" style={{ marginBottom: 16 }}>Network Map</div>
+                  <h2 className="serif" style={{ fontSize: 36, letterSpacing: '-0.02em', marginBottom: 8 }}>Hierarchy Tree</h2>
+                  <p style={{ fontSize: 14, color: '#8a8a8a' }}>{members.length} members mapped · Click any node to expand or collapse</p>
+                </div>
+
+                <div className="card" style={{ padding: '28px 24px', maxHeight: '68vh', overflowY: 'auto' }}>
+                  {tree.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '60px 0', color: '#aaa', fontSize: 14 }}>
+                      No hierarchy data yet — set <code style={{ background: 'var(--paper)', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>referred_by</code> on members to build the tree.
+                    </div>
+                  )}
+                  {tree.map(node => <TreeNode key={node.id} node={node} depth={0} />)}
+                </div>
+
+                <div style={{ marginTop: 16, display: 'flex', gap: 20, fontSize: 12, color: '#8a8a8a', flexWrap: 'wrap' }}>
+                  {[['var(--teal)', 'Level 1'], ['var(--orange)', 'Level 2'], ['#8dc63f', 'Level 3'], ['#a78bfa', 'Level 4+']].map(([c, l]) => (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c }} />{l}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ─── TASKS ─── */}
+            {tab === 'tasks' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+                  <div>
+                    <div className="section-divider" />
+                    <div className="badge" style={{ marginBottom: 16 }}>Branch Monitor</div>
+                    <h2 className="serif" style={{ fontSize: 36, letterSpacing: '-0.02em', marginBottom: 6 }}>Global Task Monitor</h2>
+                    <p style={{ fontSize: 14, color: '#8a8a8a' }}>{tasks.length} tasks across {members.length} members</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {(['all', 'pending', 'in_progress', 'completed'] as const).map(f => (
+                      <button key={f} className={`filter-chip ${taskFilter === f ? 'active' : ''}`} onClick={() => setTaskFilter(f)}>
+                        {f === 'all' ? 'All' : f === 'in_progress' ? 'In Progress' : f.charAt(0).toUpperCase() + f.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="card" style={{ overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)', background: 'var(--paper)' }}>
+                        {['Member', 'Task', 'Status', 'Due Date', 'Created'].map(h => (
+                          <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTasks.map(t => (
+                        <tr key={t.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#0d0d0d' }}>{t.fullName}</div>
+                            <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{t.email}</div>
+                          </td>
+                          <td style={{ padding: '14px 20px', fontSize: 13, color: '#3a3a3a', maxWidth: 260 }}>
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+                          </td>
+                          <td style={{ padding: '14px 20px' }}>
+                            <span style={{
+                              fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                              padding: '4px 12px', borderRadius: 100,
+                              background: t.status === 'completed' ? '#f2f9e6' : t.status === 'in_progress' ? 'var(--teal-light)' : 'var(--paper)',
+                              color: t.status === 'completed' ? '#8dc63f' : t.status === 'in_progress' ? 'var(--teal)' : '#aaa',
+                              border: `1px solid ${t.status === 'completed' ? '#8dc63f44' : t.status === 'in_progress' ? 'rgba(0,170,200,0.2)' : 'rgba(0,0,0,0.08)'}`,
+                            }}>
+                              {t.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 20px', fontSize: 12, color: '#8a8a8a' }}>
+                            {t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}
+                          </td>
+                          <td style={{ padding: '14px 20px', fontSize: 12, color: '#aaa' }}>
+                            {new Date(t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredTasks.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '60px 0', color: '#aaa', fontSize: 14 }}>No tasks found</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ─── APPLICATIONS ─── */}
+            {tab === 'applications' && (
+              <div>
+                <div style={{ marginBottom: 28 }}>
+                  <div className="section-divider" style={{ background: 'linear-gradient(90deg, var(--orange), #f5821f88)' }} />
+                  <div className="badge badge-orange" style={{ marginBottom: 16 }}>Review Queue</div>
+                  <h2 className="serif" style={{ fontSize: 36, letterSpacing: '-0.02em', marginBottom: 6 }}>Pending Applications</h2>
+                  <p style={{ fontSize: 14, color: '#8a8a8a' }}>{applications.length} applicants awaiting your decision</p>
+                </div>
+
+                {applications.length === 0 && (
+                  <div className="card" style={{ padding: '80px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: '#3a3a3a', marginBottom: 8 }}>Queue is clear</div>
+                    <div style={{ fontSize: 14, color: '#aaa' }}>All applications have been reviewed.</div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {applications.map(app => (
+                    <div key={app.id} className="card" style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange-light)', border: '1.5px solid rgba(245,130,31,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--orange)', flexShrink: 0 }}>
+                        {app.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: '#0d0d0d', marginBottom: 3 }}>{app.fullName}</div>
+                        <div style={{ fontSize: 13, color: '#8a8a8a', marginBottom: 8 }}>{app.email}</div>
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                          {app.startup_name && <span style={{ fontSize: 12, color: '#5a5a5a' }}>💡 {app.startup_name}</span>}
+                          <span style={{ fontSize: 12, fontWeight: 600, color: app.has_pan_card ? '#8dc63f' : '#e05a5a' }}>
+                            {app.has_pan_card ? '✓ PAN Verified' : '✕ No PAN'}
+                          </span>
+                          <span style={{ fontSize: 12, color: '#aaa' }}>
+                            Applied {new Date(app.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                        <button className="approve-btn" style={{ padding: '10px 24px', fontSize: 13 }} onClick={() => handleAction(app.id, 'APPROVE')}>✓ Approve</button>
+                        <button onClick={() => handleAction(app.id, 'APPROVE_AS_MENTOR')} style={{ background: '#f3f0ff', color: '#7c3aed', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '10px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>⬆ As Mentor</button>
+                        <button className="reject-btn" style={{ padding: '10px 24px', fontSize: 13 }} onClick={() => handleAction(app.id, 'REJECT')}>✕ Reject</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </main>
+
+      {/* ─── FOOTER ─── */}
+      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.06)', padding: '24px 32px', marginTop: 40 }}>
+        <div style={{ maxWidth: 1300, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#aaa' }}>
+          <span>The Achievers Club · Nashik · CEO Command Center</span>
+          <span>© {new Date().getFullYear()}</span>
+        </div>
+      </footer>
     </div>
   );
 }
