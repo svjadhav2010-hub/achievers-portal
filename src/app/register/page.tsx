@@ -1,6 +1,6 @@
 'use client'; // This tells Next.js this is an interactive frontend component
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -14,7 +14,17 @@ export default function RegisterPage() {
     password: '',
     startupName: '',
     hasPanCard: false,
+    referredBy: '',
   });
+  const [referrers, setReferrers] = useState<{id: string; fullName: string; role: string}[]>([]);
+
+  // Fetch existing members for referrer dropdown
+  useEffect(() => {
+    fetch('/api/public/members')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setReferrers(data); })
+      .catch(() => {});
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -129,6 +139,23 @@ export default function RegisterPage() {
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
               placeholder="Enter your business idea"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Referred by (Optional)</label>
+            <select
+              name="referredBy"
+              value={formData.referredBy}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all bg-white"
+            >
+              <option value="">Select who referred you...</option>
+              {referrers.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.fullName} ({r.role === 'ADMIN' ? 'CEO' : r.role === 'MENTOR' ? 'Mentor' : 'Member'})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 mt-2">

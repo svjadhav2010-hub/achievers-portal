@@ -16,6 +16,14 @@ interface DashboardData {
   };
 }
 
+interface Task {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  due_date: string | null;
+  created_at: string;
+}
+
 const MODULES = [
   { id: 1, title: 'Digital Networking Basics', desc: 'Build your professional digital presence from scratch.', status: 'completed', progress: 100, accent: 'var(--lime)' },
   { id: 2, title: 'Social Media Optimization (SMO)', desc: 'Master SMO strategies that convert followers into leads.', status: 'in-progress', progress: 60, accent: 'var(--teal)' },
@@ -28,8 +36,16 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState('');
+  const [newDueDate, setNewDueDate] = useState('');
+  const [taskLoading, setTaskLoading] = useState(false);
 
   useEffect(() => {
+    fetch('/api/tasks')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d)) setTasks(d); })
+      .catch(() => {});
     fetch('/api/dashboard')
       .then(res => res.json())
       .then(json => {
@@ -57,6 +73,32 @@ export default function Dashboard() {
   const joinDate = data?.user.joinedAt
     ? new Date(data.user.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
+
+  const addTask = async () => {
+    if (!newTask.trim()) return;
+    setTaskLoading(true);
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newTask.trim(), due_date: newDueDate || null }),
+    });
+    const d = await res.json();
+    if (d.success) {
+      setTasks(prev => [{ id: d.id, title: newTask.trim(), status: 'pending', due_date: newDueDate || null, created_at: new Date().toISOString() }, ...prev]);
+      setNewTask(''); setNewDueDate('');
+    }
+    setTaskLoading(false);
+  };
+
+  const updateTaskStatus = async (id: string, status: string) => {
+    await fetch('/api/tasks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: status as Task['status'] } : t));
+  };
+
+  const deleteTask = async (id: string) => {
+    await fetch('/api/tasks', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
 
   const completedModules = MODULES.filter(m => m.status === 'completed').length;
   const overallProgress = Math.round((completedModules / MODULES.length) * 100);
@@ -312,6 +354,57 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* ─── MY TASKS ─── */}
+              <div style={{ marginTop: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>My Tasks</h2>
+                  <span style={{ fontSize: 13, color: '#aaa' }}>{tasks.filter(t => t.status === 'completed').length}/{tasks.length} done</span>
+                </div>
+
+                {/* Add task */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                  <input
+                    value={newTask}
+                    onChange={e => setNewTask(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addTask()}
+                    placeholder="Add a new task..."
+                    style={{ flex: 1, minWidth: 200, padding: '10px 14px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, fontSize: 14, fontFamily: 'var(--font-sans)', outline: 'none', color: 'var(--ink)' }}
+                  />
+                  <input
+                    type="date"
+                    value={newDueDate}
+                    onChange={e => setNewDueDate(e.target.value)}
+                    style={{ padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', color: '#5a5a5a' }}
+                  />
+                  <button onClick={addTask} disabled={taskLoading || !newTask.trim()} className="btn-primary" style={{ padding: '10px 20px', fontSize: 13, opacity: !newTask.trim() ? 0.5 : 1 }}>
+                    + Add
+                  </button>
+                </div>
+
+                {/* Task list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {tasks.length === 0 && <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: '24px 0' }}>No tasks yet — add one above</div>}
+                  {tasks.map(task => (
+                    <div key={task.id} style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <select
+                        value={task.status}
+                        onChange={e => updateTaskStatus(task.id, e.target.value)}
+                        style={{ border: 'none', background: 'transparent', fontSize: 18, cursor: 'pointer', outline: 'none', flexShrink: 0 }}
+                      >
+                        <option value="pending">⬜</option>
+                        <option value="in_progress">🔵</option>
+                        <option value="completed">✅</option>
+                      </select>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, color: task.status === 'completed' ? '#aaa' : 'var(--ink)', textDecoration: task.status === 'completed' ? 'line-through' : 'none', fontWeight: 500 }}>{task.title}</div>
+                        {task.due_date && <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>Due {new Date(task.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>}
+                      </div>
+                      <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: 16, flexShrink: 0, lineHeight: 1 }} title="Delete">✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* ─── SIDEBAR ─── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -326,7 +419,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <a
-                    href="https://wa.me/919146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!"
+                    href="https://wa.me/91XXXXXXXXXX?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!"
                     target="_blank" rel="noopener noreferrer"
                     className="btn-primary"
                     style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '11px' }}

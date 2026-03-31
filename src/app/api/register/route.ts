@@ -10,7 +10,7 @@ interface MySQLError {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { fullName, email, password, startupName, hasPanCard } = body;
+    const { fullName, email, password, startupName, hasPanCard, referredBy } = body;
 
     // 1. Logic Gate: Enforce the strict onboarding rules
     if (!hasPanCard) {
@@ -30,9 +30,9 @@ export async function POST(request: Request) {
 
     // 4. Execute SQL: Insert the core user credentials first
     await pool.query(
-      `INSERT INTO Users (id, fullName, email, password_hash, role) 
-       VALUES (?, ?, ?, ?, 'PENDING')`,
-      [userId, fullName, email, hashedPassword]
+      `INSERT INTO Users (id, fullName, email, password_hash, role, referred_by) 
+       VALUES (?, ?, ?, ?, 'PENDING', ?)`,
+      [userId, fullName, email, hashedPassword, referredBy || null]
     );
 
     // 5. Execute SQL: Link the user's application data using the Foreign Key (user_id)

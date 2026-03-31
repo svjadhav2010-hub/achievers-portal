@@ -72,8 +72,13 @@ export default function CEOCommandCenter() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [taskFilter, setTaskFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
+  const [assignTask, setAssignTask] = useState({ userId: '', title: '', due_date: '' });
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [referrers, setReferrers] = useState<{id:string;fullName:string;role:string}[]>([]);
+  const [approveReferrer, setApproveReferrer] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    fetch('/api/public/members').then(r=>r.json()).then(d=>{ if(Array.isArray(d)) setReferrers(d); }).catch(()=>{});
     fetch('/api/admin/overview')
       .then(r => r.json())
       .then(d => {
@@ -90,7 +95,7 @@ export default function CEOCommandCenter() {
     const res = await fetch('/api/admin/applications', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, action }),
+      body: JSON.stringify({ userId, action, referredBy: approveReferrer[userId] || null }),
     });
     if (res.ok) {
       setApplications(prev => prev.filter(a => a.id !== userId));
@@ -101,6 +106,23 @@ export default function CEOCommandCenter() {
         rejected: action === 'REJECT' ? prev.rejected + 1 : prev.rejected,
       } : prev);
     }
+  };
+
+  const handleAssignTask = async () => {
+    if (!assignTask.userId || !assignTask.title.trim()) return;
+    setAssignLoading(true);
+    const res = await fetch('/api/admin/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assignTask),
+    });
+    const d = await res.json();
+    if (d.success) {
+      const member = members.find(m => m.id === assignTask.userId);
+      setTasks(prev => [{ id: d.id, title: assignTask.title, status: 'pending', due_date: assignTask.due_date || null, created_at: new Date().toISOString(), fullName: member?.fullName || '', email: member?.email || '' }, ...prev]);
+      setAssignTask({ userId: '', title: '', due_date: '' });
+    }
+    setAssignLoading(false);
   };
 
   const tree = buildTree(members);
@@ -367,6 +389,33 @@ export default function CEOCommandCenter() {
                   </div>
                 </div>
 
+                {/* Assign task panel */}
+                <div className="card" style={{ padding: '20px 24px', marginBottom: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 2, minWidth: 180 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Assign task to</div>
+                    <select value={assignTask.userId} onChange={e => setAssignTask(p => ({...p, userId: e.target.value}))}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none' }}>
+                      <option value="">Select member...</option>
+                      {members.map(m => <option key={m.id} value={m.id}>{m.fullName} ({m.role})</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 3, minWidth: 200 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Task title</div>
+                    <input value={assignTask.title} onChange={e => setAssignTask(p => ({...p, title: e.target.value}))}
+                      placeholder="e.g. Post 3 reels this week"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 140 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Due date</div>
+                    <input type="date" value={assignTask.due_date} onChange={e => setAssignTask(p => ({...p, due_date: e.target.value}))}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none' }} />
+                  </div>
+                  <button className="btn-primary" onClick={handleAssignTask} disabled={assignLoading || !assignTask.userId || !assignTask.title.trim()}
+                    style={{ padding: '10px 24px', fontSize: 13, opacity: !assignTask.userId || !assignTask.title.trim() ? 0.5 : 1, flexShrink: 0 }}>
+                    {assignLoading ? 'Assigning...' : 'Assign Task'}
+                  </button>
+                </div>
+
                 <div className="card" style={{ overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
@@ -451,10 +500,20 @@ export default function CEOCommandCenter() {
                           </span>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-                        <button className="approve-btn" style={{ padding: '10px 24px', fontSize: 13 }} onClick={() => handleAction(app.id, 'APPROVE')}>✓ Approve</button>
-                        <button onClick={() => handleAction(app.id, 'APPROVE_AS_MENTOR')} style={{ background: '#f3f0ff', color: '#7c3aed', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '10px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>⬆ As Mentor</button>
-                        <button className="reject-btn" style={{ padding: '10px 24px', fontSize: 13 }} onClick={() => handleAction(app.id, 'REJECT')}>✕ Reject</button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0, minWidth: 200 }}>
+                        <select
+                          value={approveReferrer[app.id] || ''}
+                          onChange={e => setApproveReferrer(prev => ({ ...prev, [app.id]: e.target.value }))}
+                          style={{ padding: '8px 12px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 10, fontSize: 12, fontFamily: 'var(--font-sans)', outline: 'none', color: '#5a5a5a' }}
+                        >
+                          <option value="">Referred by (optional)</option>
+                          {referrers.map(r => <option key={r.id} value={r.id}>{r.fullName} ({r.role})</option>)}
+                        </select>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="approve-btn" style={{ padding: '9px 16px', fontSize: 12, flex: 1 }} onClick={() => handleAction(app.id, 'APPROVE')}>✓ Member</button>
+                          <button onClick={() => handleAction(app.id, 'APPROVE_AS_MENTOR')} style={{ background: '#f3f0ff', color: '#7c3aed', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '9px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flex: 1 }}>⬆ Mentor</button>
+                          <button className="reject-btn" style={{ padding: '9px 12px', fontSize: 12 }} onClick={() => handleAction(app.id, 'REJECT')}>✕</button>
+                        </div>
                       </div>
                     </div>
                   ))}

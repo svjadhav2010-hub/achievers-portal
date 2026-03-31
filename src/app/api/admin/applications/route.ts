@@ -49,19 +49,19 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { userId, action } = body;
+    const { userId, action, referredBy } = body;
 
     if (!userId || !['APPROVE', 'APPROVE_AS_MENTOR', 'REJECT'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action or missing User ID.' }, { status: 400 });
     }
 
     if (action === 'APPROVE') {
-      await pool.query(`UPDATE Users SET role = 'MEMBER' WHERE id = ?`, [userId]);
+      await pool.query(`UPDATE Users SET role = 'MEMBER', referred_by = ? WHERE id = ?`, [referredBy || null, userId]);
       await pool.query(`UPDATE Applications SET status = 'APPROVED' WHERE user_id = ?`, [userId]);
     }
 
     if (action === 'APPROVE_AS_MENTOR') {
-      await pool.query(`UPDATE Users SET role = 'MENTOR' WHERE id = ?`, [userId]);
+      await pool.query(`UPDATE Users SET role = 'MENTOR', referred_by = ? WHERE id = ?`, [referredBy || null, userId]);
       await pool.query(`UPDATE Applications SET status = 'APPROVED' WHERE user_id = ?`, [userId]);
     }
 
