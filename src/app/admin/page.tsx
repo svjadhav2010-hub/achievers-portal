@@ -111,18 +111,25 @@ export default function CEOCommandCenter() {
   const handleAssignTask = async () => {
     if (!assignTask.userId || !assignTask.title.trim()) return;
     setAssignLoading(true);
-    const res = await fetch('/api/admin/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(assignTask),
-    });
-    const d = await res.json();
-    if (d.success) {
-      const member = members.find(m => m.id === assignTask.userId);
-      setTasks(prev => [{ id: d.id, title: assignTask.title, status: 'pending', due_date: assignTask.due_date || null, created_at: new Date().toISOString(), fullName: member?.fullName || '', email: member?.email || '' }, ...prev]);
-      setAssignTask({ userId: '', title: '', due_date: '' });
+    try {
+      const res = await fetch('/api/admin/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assignTask),
+      });
+      const d = await res.json();
+      if (d.success) {
+        const member = members.find(m => m.id === assignTask.userId);
+        setTasks(prev => [{ id: d.id, title: assignTask.title, status: 'pending', due_date: assignTask.due_date || null, created_at: new Date().toISOString(), fullName: member?.fullName || '', email: member?.email || '' }, ...prev]);
+        setAssignTask({ userId: '', title: '', due_date: '' });
+      } else {
+        alert(d.error || 'Failed to assign task.');
+      }
+    } catch (err) {
+      alert('Network error — please try again.');
+    } finally {
+      setAssignLoading(false);
     }
-    setAssignLoading(false);
   };
 
   const tree = buildTree(members);

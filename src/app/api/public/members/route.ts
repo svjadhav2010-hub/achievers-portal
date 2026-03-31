@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
-// Public endpoint — only returns names and IDs for the referrer dropdown
 export async function GET() {
   try {
     const [rows] = await pool.query(
@@ -11,6 +10,7 @@ export async function GET() {
     );
     return NextResponse.json(rows);
   } catch (error) {
+    console.error('Public members error:', error);
     return NextResponse.json({ error: 'Failed to fetch members' }, { status: 500 });
   }
 }
