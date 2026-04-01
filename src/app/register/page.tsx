@@ -21,9 +21,14 @@ export default function RegisterPage() {
   // Fetch existing members for referrer dropdown
   useEffect(() => {
     fetch('/api/public/members')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setReferrers(data); })
-      .catch(() => {});
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load');
+        return r.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) setReferrers(data);
+      })
+      .catch(err => console.error('Referrer fetch error:', err));
   }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');

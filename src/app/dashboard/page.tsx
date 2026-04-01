@@ -356,52 +356,107 @@ export default function Dashboard() {
 
               {/* ─── MY TASKS ─── */}
               <div style={{ marginTop: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>My Tasks</h2>
-                  <span style={{ fontSize: 13, color: '#aaa' }}>{tasks.filter(t => t.status === 'completed').length}/{tasks.length} done</span>
-                </div>
-
-                {/* Add task */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-                  <input
-                    value={newTask}
-                    onChange={e => setNewTask(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addTask()}
-                    placeholder="Add a new task..."
-                    style={{ flex: 1, minWidth: 200, padding: '10px 14px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, fontSize: 14, fontFamily: 'var(--font-sans)', outline: 'none', color: 'var(--ink)' }}
-                  />
-                  <input
-                    type="date"
-                    value={newDueDate}
-                    onChange={e => setNewDueDate(e.target.value)}
-                    style={{ padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', color: '#5a5a5a' }}
-                  />
-                  <button onClick={addTask} disabled={taskLoading || !newTask.trim()} className="btn-primary" style={{ padding: '10px 20px', fontSize: 13, opacity: !newTask.trim() ? 0.5 : 1 }}>
-                    + Add
-                  </button>
-                </div>
-
-                {/* Task list */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {tasks.length === 0 && <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: '24px 0' }}>No tasks yet — add one above</div>}
-                  {tasks.map(task => (
-                    <div key={task.id} style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <select
-                        value={task.status}
-                        onChange={e => updateTaskStatus(task.id, e.target.value)}
-                        style={{ border: 'none', background: 'transparent', fontSize: 18, cursor: 'pointer', outline: 'none', flexShrink: 0 }}
-                      >
-                        <option value="pending">⬜</option>
-                        <option value="in_progress">🔵</option>
-                        <option value="completed">✅</option>
-                      </select>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, color: task.status === 'completed' ? '#aaa' : 'var(--ink)', textDecoration: task.status === 'completed' ? 'line-through' : 'none', fontWeight: 500 }}>{task.title}</div>
-                        {task.due_date && <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>Due {new Date(task.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>}
-                      </div>
-                      <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: 16, flexShrink: 0, lineHeight: 1 }} title="Delete">✕</button>
+                <div style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 20, overflow: 'hidden' }}>
+                  {/* Header */}
+                  <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>My Tasks</h2>
+                      <p style={{ fontSize: 12, color: '#aaa' }}>Your personal to-do list + tasks assigned by your mentor</p>
                     </div>
-                  ))}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {tasks.filter(t => t.status === 'completed').length > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#8dc63f', background: '#f2f9e6', borderRadius: 100, padding: '3px 10px' }}>
+                          {tasks.filter(t => t.status === 'completed').length} done
+                        </span>
+                      )}
+                      {tasks.filter(t => t.status === 'pending').length > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--orange)', background: 'var(--orange-light)', borderRadius: 100, padding: '3px 10px' }}>
+                          {tasks.filter(t => t.status === 'pending').length} pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Add task row */}
+                  <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <input
+                      value={newTask}
+                      onChange={e => setNewTask(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && addTask()}
+                      placeholder="Add a new task and press Enter..."
+                      style={{ flex: 1, minWidth: 200, padding: '9px 14px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', color: 'var(--ink)' }}
+                    />
+                    <input
+                      type="date"
+                      value={newDueDate}
+                      onChange={e => setNewDueDate(e.target.value)}
+                      style={{ padding: '9px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 10, fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', color: '#5a5a5a' }}
+                    />
+                    <button onClick={addTask} disabled={taskLoading || !newTask.trim()} className="btn-primary"
+                      style={{ padding: '9px 18px', fontSize: 13, opacity: !newTask.trim() ? 0.5 : 1 }}>
+                      + Add
+                    </button>
+                  </div>
+
+                  {/* Task list */}
+                  <div style={{ padding: '8px 0' }}>
+                    {tasks.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '32px 0', color: '#aaa', fontSize: 13 }}>
+                        No tasks yet — add one above or check back after your mentor assigns one
+                      </div>
+                    )}
+                    {tasks.map(task => (
+                      <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px', borderBottom: '1px solid rgba(0,0,0,0.04)', transition: 'background 0.15s' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--paper)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        {/* Status circle button */}
+                        <button
+                          onClick={() => updateTaskStatus(task.id, task.status === 'pending' ? 'in_progress' : task.status === 'in_progress' ? 'completed' : 'pending')}
+                          style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${task.status === 'completed' ? '#8dc63f' : task.status === 'in_progress' ? 'var(--teal)' : 'rgba(0,0,0,0.2)'}`, background: task.status === 'completed' ? '#8dc63f' : task.status === 'in_progress' ? 'var(--teal-light)' : 'transparent', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                          title={`Mark as ${task.status === 'pending' ? 'in progress' : task.status === 'in_progress' ? 'completed' : 'pending'}`}
+                        >
+                          {task.status === 'completed' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {task.status === 'in_progress' && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--teal)' }} />}
+                        </button>
+
+                        {/* Task info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: task.status === 'completed' ? '#aaa' : 'var(--ink)', textDecoration: task.status === 'completed' ? 'line-through' : 'none', lineHeight: 1.4 }}>
+                            {task.title}
+                          </div>
+                          <div style={{ display: 'flex', gap: 10, marginTop: 3, flexWrap: 'wrap' }}>
+                            {task.due_date && (
+                              <span style={{ fontSize: 11, color: new Date(task.due_date) < new Date() && task.status !== 'completed' ? '#e05a5a' : '#aaa', fontWeight: 500 }}>
+                                Due {new Date(task.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
+                            <span style={{ fontSize: 11, fontWeight: 600, color: task.status === 'completed' ? '#8dc63f' : task.status === 'in_progress' ? 'var(--teal)' : '#bbb', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {task.status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status dropdown for precise control */}
+                        <select
+                          value={task.status}
+                          onChange={e => updateTaskStatus(task.id, e.target.value)}
+                          style={{ padding: '4px 8px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, fontSize: 11, fontFamily: 'var(--font-sans)', color: '#5a5a5a', background: 'var(--paper)', outline: 'none', cursor: 'pointer', flexShrink: 0 }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+
+                        <button onClick={() => deleteTask(task.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: 14, flexShrink: 0, lineHeight: 1, padding: '4px', borderRadius: 6, transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#e05a5a'; e.currentTarget.style.background = '#fff3f3'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = '#ddd'; e.currentTarget.style.background = 'transparent'; }}
+                          title="Delete task"
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
