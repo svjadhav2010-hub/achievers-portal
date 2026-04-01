@@ -5,7 +5,6 @@ import { verifyToken } from '@/lib/jwt';
 
 export async function GET() {
   try {
-    // Verify the requester is logged in
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 });
@@ -13,9 +12,8 @@ export async function GET() {
     const payload = await verifyToken(token);
     if (!payload) return NextResponse.json({ error: 'Invalid session.' }, { status: 401 });
 
-    // Fetch all approved members and mentors from Users table
     const [rows] = await pool.query(
-      `SELECT id, fullName, email, role, created_at
+      `SELECT id, fullName, email, role, phone, created_at
        FROM Users
        WHERE role IN ('MEMBER', 'MENTOR', 'ADMIN')
        ORDER BY role ASC, fullName ASC`

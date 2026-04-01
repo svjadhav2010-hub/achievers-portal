@@ -12,6 +12,7 @@ export default function RegisterPage() {
     fullName: '',
     email: '',
     password: '',
+    phone: '',
     startupName: '',
     hasPanCard: false,
     referredBy: '',
@@ -132,6 +133,19 @@ export default function RegisterPage() {
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
               placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp Number *</label>
+            <input
+              type="tel"
+              name="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+              placeholder="+91 98765 43210"
             />
           </div>
 

@@ -8,6 +8,7 @@ interface Member {
   fullName: string;
   email: string;
   role: string;
+  phone: string | null;
   created_at: string;
 }
 
@@ -215,10 +216,12 @@ export default function MemberDirectory() {
                       Joined {joinDate}
                     </div>
                     <a
-                      href={`https://wa.me/?text=Hi%20${encodeURIComponent(member.fullName)}!`}
+                      href={member.phone
+                        ? `https://wa.me/${member.phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(member.fullName)}!`
+                        : `https://wa.me/?text=Hi%20${encodeURIComponent(member.fullName)}!`}
                       target="_blank" rel="noopener noreferrer"
-                      style={{ width: 32, height: 32, borderRadius: '50%', background: '#f2f9f3', border: '1px solid rgba(37,211,102,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', transition: 'all 0.2s' }}
-                      title={`Message ${member.fullName}`}
+                      style={{ width: 32, height: 32, borderRadius: '50%', background: member.phone ? '#f2f9f3' : '#f5f5f5', border: `1px solid ${member.phone ? 'rgba(37,211,102,0.2)' : 'rgba(0,0,0,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', transition: 'all 0.2s', opacity: member.phone ? 1 : 0.4 }}
+                      title={member.phone ? `Message ${member.fullName} on WhatsApp` : 'No WhatsApp number on file'}
                     >
                       <svg width="16" height="16" viewBox="0 0 30 30" fill="none">
                         <path d="M15 2C7.82 2 2 7.82 2 15c0 2.3.62 4.45 1.7 6.3L2 28l6.87-1.67A13 13 0 0 0 15 28c7.18 0 13-5.82 13-13S22.18 2 15 2Z" fill="#25D366"/>
