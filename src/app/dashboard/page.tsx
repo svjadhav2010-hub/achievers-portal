@@ -323,7 +323,7 @@ export default function Dashboard() {
                     <div style={{ fontSize:12, color:'#8a8a8a' }}>Senior Manager, Nashik</div>
                   </div>
                 </div>
-                <a href="https://wa.me/91XXXXXXXXXX?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
+                <a href="https://wa.me/919146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
                   Book Mentorship Call
                 </a>
               </div>
@@ -335,7 +335,7 @@ export default function Dashboard() {
                   <div style={{ fontSize:11, fontWeight:700, color:'var(--teal)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Daily Session</div>
                   <h3 style={{ fontSize:16, fontWeight:600, color:'white', marginBottom:6 }}>Live Strategy Session</h3>
                   <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', marginBottom:18, lineHeight:1.5 }}>Join today's live training at 8:00 PM on Google Meet.</p>
-                  <a href="#" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px', background:'var(--teal)' }}>Join Webinar →</a>
+                  <Link href="/events" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px', background:'var(--teal)' }}>View Events →</Link>
                 </div>
               </div>
 

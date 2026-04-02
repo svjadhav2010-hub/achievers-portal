@@ -1,5 +1,4 @@
 'use client';
-//import { link } from 'fs';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -333,8 +332,8 @@ export default function ContactPage() {
             <p style={{ color: '#4a4a4a', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Start Young · Retire Young</p>
           </div>
           <div style={{ display: 'flex', gap: 28, fontSize: 13, fontWeight: 500, color: '#4a4a4a' }}>
-            <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
-            <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
+            <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
+            <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
             <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
           </div>
           <div style={{ fontSize: 13, color: '#3a3a3a' }}>© {new Date().getFullYear()} The Achievers Club · Nashik</div>

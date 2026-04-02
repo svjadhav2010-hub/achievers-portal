@@ -736,7 +736,7 @@ export default function HomePage() {
 
             {/* Video card */}
             <div style={{ borderRadius: 24, overflow: 'hidden', position: 'relative', background: '#111', aspectRatio: '9/16', boxShadow: '0 32px 64px -16px rgba(0,0,0,0.2)', marginTop: 32 }}>
-              <img src="/placeholder-2.png" alt="Video" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.65 }} />
+              <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingLeft: 4, cursor: 'pointer', transition: 'all 0.3s' }}>
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -816,9 +816,9 @@ export default function HomePage() {
               <p style={{ color: '#4a4a4a', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Start Young · Retire Young</p>
             </div>
             <div style={{ display: 'flex', gap: 28, fontSize: 13, fontWeight: 500, color: '#4a4a4a' }}>
-              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
-              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
-              <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
+              <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
+              <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
+              <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
             </div>
             <div style={{ fontSize: 13, color: '#3a3a3a' }}>
               © {new Date().getFullYear()} The Achievers Club · Nashik

@@ -217,7 +217,7 @@ export default function EventsPage() {
             <Link href="/#benefits" style={{ textDecoration: 'none', color: 'inherit' }}>Why Join</Link>
             <Link href="/about" style={{ textDecoration: 'none', color: 'inherit' }}>About</Link>
             <Link href="/events" style={{ textDecoration: 'none', color: 'var(--teal)', fontWeight: 600 }}>Events</Link>
-            <Link href="/#contact" style={{ textDecoration: 'none', color: 'inherit' }}>Contact</Link>
+            <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Contact</Link>
           </div>
           <div className="desktop-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link href="/login" style={{ fontSize: 14, fontWeight: 500, color: '#5a5a5a', textDecoration: 'none' }}>Login</Link>
@@ -402,9 +402,9 @@ export default function EventsPage() {
             <p style={{ color: '#4a4a4a', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Start Young · Retire Young</p>
           </div>
           <div style={{ display: 'flex', gap: 28, fontSize: 13, fontWeight: 500, color: '#4a4a4a' }}>
-            <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
-            <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
-            <Link href="#" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
+            <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
+            <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
+            <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
           </div>
           <div style={{ fontSize: 13, color: '#3a3a3a' }}>© {new Date().getFullYear()} The Achievers Club · Nashik</div>
         </div>
