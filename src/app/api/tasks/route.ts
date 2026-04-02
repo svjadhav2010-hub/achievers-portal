@@ -16,13 +16,18 @@ export async function GET() {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 });
 
+    console.log('Fetching tasks for userId:', user.userId, 'fullName:', user.fullName);
+
     const [rows] = await pool.query(
       `SELECT id, title, status, due_date, created_at FROM Tasks
        WHERE user_id = ? ORDER BY created_at DESC`,
       [user.userId]
     );
+
+    console.log('Tasks found:', (rows as any[]).length);
     return NextResponse.json(rows);
   } catch (error) {
+    console.error('Tasks fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch tasks.' }, { status: 500 });
   }
 }
