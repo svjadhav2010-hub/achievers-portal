@@ -14,7 +14,7 @@ async function getRole(request: NextRequest): Promise<string | null> {
     const { payload } = await jwtVerify(token, secret);
     const role = payload.role as string;
     // Strict allowlist
-    if (!['ADMIN', 'MEMBER', 'PENDING', 'REJECTED'].includes(role)) return null;
+    if (!['ADMIN', 'MENTOR', 'MEMBER', 'PENDING', 'REJECTED'].includes(role)) return null;
     return role;
   } catch {
     // Token is invalid, expired, or tampered — reject it
@@ -22,7 +22,7 @@ async function getRole(request: NextRequest): Promise<string | null> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const role = await getRole(request);
 
