@@ -1,4 +1,5 @@
 'use client';
+import Chatbot from '@/app/components/Chatbot';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -323,7 +324,7 @@ export default function Dashboard() {
                     <div style={{ fontSize:12, color:'#8a8a8a' }}>Senior Manager, Nashik</div>
                   </div>
                 </div>
-                <a href="https://wa.me/919146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
+                <a href="https://wa.me/91XXXXXXXXXX?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
                   Book Mentorship Call
                 </a>
               </div>
@@ -359,6 +360,7 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+      <Chatbot />
     </div>
   );
 }

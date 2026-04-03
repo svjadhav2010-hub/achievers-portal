@@ -1,4 +1,5 @@
 'use client';
+import Chatbot from '@/app/components/Chatbot';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -235,6 +236,7 @@ export default function MemberDirectory() {
           </div>
         )}
       </main>
+      <Chatbot />
     </div>
   );
 }
