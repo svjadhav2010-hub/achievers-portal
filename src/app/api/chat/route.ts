@@ -46,24 +46,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Messages are required.' }, { status: 400 });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      console.error('GROQ_API_KEY not found in environment variables');
+      return NextResponse.json({ reply: 'Chat service is not configured. Please contact support.' });
+    }
+
+    // Build messages in OpenAI format (Groq uses same format)
+    const groqMessages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages.slice(-10).map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    ];
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'llama-3.3-70b-versatile', // Fast and free
+        messages: groqMessages,
+        temperature: 0.7,
         max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: messages.slice(-10), // keep last 10 for context
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Groq API error:', errorData);
+      return NextResponse.json({ reply: 'Sorry, I could not process that. Please try again.' });
+    }
+
     const data = await response.json();
-    const text = data.content?.map((b: any) => b.text || '').join('') || 'Sorry, I could not process that.';
+    const text = data.choices?.[0]?.message?.content || 'Sorry, I could not process that.';
 
     return NextResponse.json({ reply: text });
 
   } catch (error) {
     console.error('Chat API error:', error);
-    return NextResponse.json({ error: 'Failed to get response.' }, { status: 500 });
+    return NextResponse.json({ reply: 'Sorry, I could not process that. Please try again later.' });
   }
 }
