@@ -3,7 +3,8 @@ import Chatbot from '@/app/components/Chatbot';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
+import ThemeToggle from '@/app/components/ThemeToggle';
+// Add <ThemeToggle /> in the nav div
 interface Member {
   id: string;
   fullName: string;
@@ -118,6 +119,7 @@ export default function MemberDirectory() {
             <img src="/icon.png" alt="" style={{ height: 32 }} />
             <span className="serif" style={{ fontSize: 16, color: '#0d0d0d', letterSpacing: '-0.01em' }}>Achievers Portal</span>
           </Link>
+          <ThemeToggle /> 
           <div style={{ display: 'flex', gap: 10 }}>
             <Link href="/dashboard" className="btn-ghost">My Dashboard</Link>
             <button className="btn-ghost" onClick={async () => { await fetch('/api/logout', { method: 'POST' }); window.location.href = '/login'; }}>

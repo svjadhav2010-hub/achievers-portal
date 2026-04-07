@@ -4,6 +4,12 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// At top with imports:
+import ThemeToggle from '@/app/components/ThemeToggle';
+
+// In the nav, between Directory button and Log out button:
+
+
 interface DashboardData {
   user: { id: string; fullName: string; email: string; role: string; joinedAt: string; };
   stats: { totalMembers: number; };
@@ -113,6 +119,7 @@ export default function Dashboard() {
           </Link>
           <div style={{ display:'flex', gap:8 }}>
             <Link href="/directory" className="btn-ghost">Directory</Link>
+            <ThemeToggle />
             <button className="logout-btn" onClick={async () => { await fetch('/api/logout', { method:'POST' }); window.location.href='/login'; }}>Log out</button>
           </div>
         </div>

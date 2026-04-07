@@ -4,3 +4,92 @@
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
   --font-serif: var(--font-dm-serif), Georgia, serif;
 }
+
+/* ─── LIGHT MODE (default) ─── */
+:root,
+[data-theme="light"] {
+  --teal: #00aac8;
+  --teal-light: #e0f6fb;
+  --orange: #f5821f;
+  --orange-light: #fef3e8;
+  --lime: #8dc63f;
+  --ink: #0d0d0d;
+  --ink-muted: #5a5a5a;
+  --paper: #f8f7f4;
+  --paper-warm: #f2f0ec;
+  --white: #ffffff;
+
+  /* Component tokens */
+  --surface: #ffffff;
+  --surface-2: #f8f7f4;
+  --surface-3: #f2f0ec;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.15);
+  --text-primary: #0d0d0d;
+  --text-secondary: #5a5a5a;
+  --text-muted: #8a8a8a;
+  --text-faint: #aaaaaa;
+  --nav-bg: rgba(255,255,255,0.85);
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: rgba(0,0,0,0.12);
+  --shadow: rgba(0,0,0,0.06);
+  --shadow-md: rgba(0,0,0,0.12);
+}
+
+/* ─── DARK MODE ─── */
+[data-theme="dark"] {
+  --teal: #00c8eb;
+  --teal-light: rgba(0,200,235,0.12);
+  --orange: #f5921f;
+  --orange-light: rgba(245,146,31,0.12);
+  --lime: #a0d94f;
+  --ink: #f0f0f0;
+  --ink-muted: #a0a0a0;
+  --paper: #0f0f13;
+  --paper-warm: #141418;
+  --white: #1a1a22;
+
+  --surface: #1a1a22;
+  --surface-2: #0f0f13;
+  --surface-3: #141418;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.15);
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6a6a6a;
+  --text-faint: #4a4a4a;
+  --nav-bg: rgba(15,15,19,0.90);
+  --card-bg: #1a1a22;
+  --input-bg: #141418;
+  --input-border: rgba(255,255,255,0.1);
+  --shadow: rgba(0,0,0,0.3);
+  --shadow-md: rgba(0,0,0,0.5);
+}
+
+/* ─── BASE ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  color-scheme: light;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+[data-theme="dark"] { color-scheme: dark; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Smooth transitions for all themed elements */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar { width: 6px; }
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #0f0f13; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider, ThemeScript } from "./components/ThemeProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
+  axes: ["opsz"],
   weight: "variable",
   style: ["normal", "italic"],
   variable: "--font-dm-sans",
@@ -23,31 +25,29 @@ export const metadata: Metadata = {
   description:
     "A premium digital community where young entrepreneurs in Nashik learn, network, and generate passive income. Join the Achievers Club today.",
   keywords: [
-    "Achievers Club",
-    "Nashik",
-    "digital entrepreneurship",
-    "passive income",
-    "Forever Living Products",
-    "FLP Nashik",
+    "Achievers Club", "Nashik", "digital entrepreneurship",
+    "passive income", "Forever Living Products", "FLP Nashik",
     "network marketing Nashik",
   ],
   openGraph: {
     title: "The Achievers Club · Nashik Branch",
-    description:
-      "Build wealth on your terms. Join 500+ digital entrepreneurs in Nashik's fastest-growing business community.",
+    description: "Build wealth on your terms. Join 500+ digital entrepreneurs in Nashik's fastest-growing business community.",
     type: "website",
     locale: "en_IN",
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="antialiased">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
