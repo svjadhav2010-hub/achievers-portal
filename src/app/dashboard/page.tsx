@@ -1,14 +1,9 @@
 'use client';
 import Chatbot from '@/app/components/Chatbot';
+import ThemeToggle from '@/app/components/ThemeToggle';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-// At top with imports:
-import ThemeToggle from '@/app/components/ThemeToggle';
-
-// In the nav, between Directory button and Log out button:
-
 
 interface DashboardData {
   user: { id: string; fullName: string; email: string; role: string; joinedAt: string; };
@@ -80,14 +75,14 @@ export default function Dashboard() {
   const taskProgress = tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface-2)', fontFamily: 'var(--font-sans)' }}>
       <style>{`
         :root { --teal:#00aac8; --teal-light:#e0f6fb; --orange:#f5821f; --orange-light:#fef3e8; --lime:#8dc63f; --ink:#0d0d0d; --paper:#f8f7f4; --paper-warm:#f2f0ec; }
         * { box-sizing:border-box; margin:0; padding:0; }
         .serif { font-family:var(--font-serif); }
-        .nav-bar { background:rgba(255,255,255,0.85); backdrop-filter:blur(24px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; position:sticky; top:0; z-index:50; }
+        .nav-bar { background:var(--nav-bg); backdrop-filter:blur(24px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; position:sticky; top:0; z-index:50; }
         .nav-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:64px; }
-        .stat-card { background:white; border:1px solid rgba(0,0,0,0.06); border-radius:20px; padding:20px 24px; }
+        .stat-card { background:var(--card-bg); border:1px solid rgba(0,0,0,0.06); border-radius:20px; padding:20px 24px; }
         .btn-primary { background:var(--orange); color:white; border:none; border-radius:100px; padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
         .btn-primary:hover { background:#e07018; }
         .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
@@ -95,18 +90,18 @@ export default function Dashboard() {
         .btn-ghost:hover { border-color:var(--teal); color:var(--teal); }
         .logout-btn { background:transparent; border:1px solid rgba(0,0,0,0.12); border-radius:100px; padding:8px 18px; font-size:13px; font-weight:500; color:#7a7a7a; cursor:pointer; transition:all 0.2s; }
         .logout-btn:hover { border-color:#e05a5a; color:#e05a5a; }
-        .tab-btn { padding:8px 20px; border-radius:100px; border:1px solid transparent; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; color:#5a5a5a; background:transparent; }
+        .tab-btn { padding:8px 20px; border-radius:100px; border:1px solid transparent; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; color:var(--text-secondary); background:transparent; }
         .tab-btn:hover { background:var(--paper-warm); }
-        .tab-btn.active { background:white; border-color:rgba(0,0,0,0.1); color:var(--ink); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+        .tab-btn.active { background:var(--card-bg); border-color:rgba(0,0,0,0.1); color:var(--ink); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
         .progress-bar-bg { height:6px; background:rgba(0,0,0,0.07); border-radius:3px; overflow:hidden; flex:1; }
         .progress-bar-fill { height:100%; border-radius:3px; transition:width 0.6s ease; }
-        .module-row { background:white; border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:16px 20px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
+        .module-row { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:16px 20px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
         .module-row.locked { opacity:0.5; }
-        .task-row { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid rgba(0,0,0,0.04); transition:background 0.15s; }
+        .task-row { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); transition:background 0.15s; }
         .task-row:hover { background:var(--paper); }
         .task-row:last-child { border-bottom:none; }
         .status-circle { width:24px; height:24px; border-radius:50%; border:2px solid rgba(0,0,0,0.2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
-        select.task-status { padding:4px 8px; border:1px solid rgba(0,0,0,0.08); border-radius:8px; font-size:11px; font-family:var(--font-sans); color:#5a5a5a; background:var(--paper); outline:none; cursor:pointer; flex-shrink:0; }
+        select.task-status { padding:4px 8px; border:1px solid rgba(0,0,0,0.08); border-radius:8px; font-size:11px; font-family:var(--font-sans); color:var(--text-secondary); background:var(--paper); outline:none; cursor:pointer; flex-shrink:0; }
         @media (max-width:768px) { .dashboard-grid { grid-template-columns:1fr !important; } .stats-grid { grid-template-columns:1fr 1fr !important; } .nav-bar { padding:0 16px !important; } main { padding:20px 16px !important; } }
       `}</style>
 
@@ -331,7 +326,7 @@ export default function Dashboard() {
                     <div style={{ fontSize:12, color:'#8a8a8a' }}>Senior Manager, Nashik</div>
                   </div>
                 </div>
-                <a href="https://wa.me/9146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
+                <a href="https://wa.me/91XXXXXXXXXX?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ width:'100%', justifyContent:'center', fontSize:13, padding:'10px' }}>
                   Book Mentorship Call
                 </a>
               </div>
