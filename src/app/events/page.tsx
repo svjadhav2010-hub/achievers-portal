@@ -406,7 +406,12 @@ export default function EventsPage() {
             <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
             <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
           </div>
-          <div style={{ fontSize: 13, color: '#3a3a3a' }}>© {new Date().getFullYear()} The Achievers Club · Nashik</div>
+          <div style={{ fontSize: 13, color: '#3a3a3a' }}><span style={{ display:'flex', gap:10, alignItems:'center', marginBottom:8 }}>
+                <a href="https://www.instagram.com/achieversclubnashik_official/" target="_blank" rel="noopener noreferrer" style={{ color:'#555', textDecoration:'none', fontSize:18 }} title="Instagram">📸</a>
+                <a href="https://www.linkedin.com/company/work-from-anywhere-anytime/?originalSubdomain=in" target="_blank" rel="noopener noreferrer" style={{ color:'#555', textDecoration:'none', fontSize:18 }} title="LinkedIn">💼</a>
+                <a href="https://www.youtube.com/channel/UCp09BjyDPbOyeJmnc2FRCTg" target="_blank" rel="noopener noreferrer" style={{ color:'#555', textDecoration:'none', fontSize:18 }} title="YouTube">▶️</a>
+              </span>
+              © {new Date().getFullYear()} The Achievers Club · Nashik</div>
         </div>
       </footer>
 

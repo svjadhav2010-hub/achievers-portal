@@ -437,7 +437,7 @@ export default function HomePage() {
       <div className="wa-fab-wrapper">
         <div className="wa-fab-label">Chat with us on WhatsApp</div>
         <a
-          href="https://wa.me/919146531857?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
+          href="https://wa.me/9146531857?text=Hi%2C%20I%27m%20interested%20in%20joining%20the%20Achievers%20Club%20Nashik%20Branch!"
           target="_blank"
           rel="noopener noreferrer"
           className="wa-fab"
@@ -819,6 +819,20 @@ export default function HomePage() {
               <Link href="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link>
               <Link href="/terms" style={{ textDecoration: 'none', color: 'inherit' }}>Terms of Service</Link>
               <Link href="/contact" style={{ textDecoration: 'none', color: 'inherit' }}>Support</Link>
+            </div>
+            <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+              <a href="https://www.instagram.com/achieversclubnashik_official/" target="_blank" rel="noopener noreferrer" title="Instagram"
+                style={{ width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#666" stroke="none"/></svg>
+              </a>
+              <a href="https://www.linkedin.com/company/work-from-anywhere-anytime/?originalSubdomain=in" target="_blank" rel="noopener noreferrer" title="LinkedIn"
+                style={{ width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="#666"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </a>
+              <a href="https://www.youtube.com/channel/UCp09BjyDPbOyeJmnc2FRCTg" target="_blank" rel="noopener noreferrer" title="YouTube"
+                style={{ width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', textDecoration:'none' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="#666"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#1a1a1a"/></svg>
+              </a>
             </div>
             <div style={{ fontSize: 13, color: '#3a3a3a' }}>
               © {new Date().getFullYear()} The Achievers Club · Nashik

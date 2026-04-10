@@ -70,6 +70,10 @@ export default function Dashboard() {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
+  const exportData = (format: 'csv' | 'json') => {
+    window.open(`/api/member/export?format=${format}`, '_blank');
+  };
+
   const initials = data?.user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '..';
   const joinDate = data?.user.joinedAt ? new Date(data.user.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
   const completedMods = MODULES.filter(m => m.status === 'completed').length;
@@ -610,6 +614,28 @@ export default function Dashboard() {
                 {[['👥', 'Member Directory', '/directory'], ['📅', 'Upcoming Events', '/events'], ['💬', 'Contact Support', '/contact']].map(([icon, label, href]) => (
                   <Link key={href} href={href} className="db-quick-link"><span>{icon}</span>{label}</Link>
                 ))}
+              </div>
+
+              {/* Export Data */}
+              <div className="db-card">
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Export My Data</div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>Download your profile and task history.</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => exportData('csv')}
+                    style={{ flex: 1, padding: '9px 0', border: '1px solid var(--border)', borderRadius: 10, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--surface-3)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--teal)'; e.currentTarget.style.color = 'var(--teal)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-primary)'; }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    CSV
+                  </button>
+                  <button onClick={() => exportData('json')}
+                    style={{ flex: 1, padding: '9px 0', border: '1px solid var(--border)', borderRadius: 10, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--surface-3)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--orange)'; e.currentTarget.style.color = 'var(--orange)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-primary)'; }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    JSON
+                  </button>
+                </div>
               </div>
 
             </div>
