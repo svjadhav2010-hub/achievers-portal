@@ -3,14 +3,14 @@ import Chatbot from '@/app/components/Chatbot';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import ThemeToggle from '@/app/components/ThemeToggle';
-// Add <ThemeToggle /> in the nav div
+
 interface Member {
   id: string;
   fullName: string;
   email: string;
   role: string;
   phone: string | null;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -119,7 +119,6 @@ export default function MemberDirectory() {
             <img src="/icon.png" alt="" style={{ height: 32 }} />
             <span className="serif" style={{ fontSize: 16, color: '#0d0d0d', letterSpacing: '-0.01em' }}>Achievers Portal</span>
           </Link>
-          <ThemeToggle /> 
           <div style={{ display: 'flex', gap: 10 }}>
             <Link href="/dashboard" className="btn-ghost">My Dashboard</Link>
             <button className="btn-ghost" onClick={async () => { await fetch('/api/logout', { method: 'POST' }); window.location.href = '/login'; }}>
@@ -199,8 +198,10 @@ export default function MemberDirectory() {
                 <div key={member.id} className="member-card">
                   {/* Top: avatar + role */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc.bg, border: `1.5px solid ${rc.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: rc.color, fontFamily: 'var(--font-serif)', flexShrink: 0 }}>
-                      {initials}
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc.bg, border: `1.5px solid ${rc.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: rc.color, fontFamily: 'var(--font-serif)', flexShrink: 0, overflow: 'hidden' }}>
+                      {member.avatar_url
+                        ? <img src={member.avatar_url} alt={member.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : initials}
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 700, color: rc.color, background: rc.bg, borderRadius: 100, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {member.role}

@@ -1,5 +1,6 @@
 'use client';
 import Chatbot from '@/app/components/Chatbot';
+import AvatarUpload from '@/app/components/AvatarUpload';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -32,9 +33,11 @@ export default function Dashboard() {
   const [newDueDate, setNewDueDate] = useState('');
   const [taskLoading, setTaskLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'modules'>('tasks');
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/tasks').then(r => r.json()).then(d => { if (Array.isArray(d)) setTasks(d); }).catch(() => {});
+    fetch('/api/member/avatar').then(r => r.json()).then(d => { if (d.avatar_url) setAvatar(d.avatar_url); }).catch(() => {});
     fetch('/api/dashboard').then(r => r.json()).then(json => {
       if (json.error) { router.push('/login'); return; }
       setData(json); setLoading(false);
@@ -405,9 +408,7 @@ export default function Dashboard() {
           {/* HEADER */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 32 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, var(--teal), var(--lime))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>
-                {initials}
-              </div>
+              <AvatarUpload initials={initials} currentAvatar={avatar} onUpdate={setAvatar} size={52} />
               <div>
                 <h1 style={{ fontSize: 26, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 3, fontFamily: 'var(--font-dm-serif, serif)', fontWeight: 400 }}>
                   Welcome back, {data.user.fullName.split(' ')[0]}!
