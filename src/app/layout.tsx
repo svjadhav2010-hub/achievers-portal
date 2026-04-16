@@ -42,6 +42,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
+        {/* Elfsight Google Reviews Widget — paste your actual src URL after creating widget at elfsight.com */}
+        {/* <script src="https://static.elfsight.com/platform/platform.js" async></script> */}
+        <script src="https://elfsightcdn.com/platform.js" async></script>
       </head>
       <body className="antialiased">
         <ThemeProvider>
