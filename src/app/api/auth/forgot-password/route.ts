@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     );
 
     await resend.emails.send({
-      from: 'Achievers Club <onboarding@resend.dev>',
+      from: 'Achievers Club <noreply@auth.acheiversclubofficial.in>',
       to: email,
       subject: `${otp} — Reset your Achievers Club password`,
       html: `
