@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
     // Send notification email to the client
     const { error: sendError } = await resend.emails.send({
-      from: 'Achievers Club <onboarding@resend.dev>', // change to your verified domain later
+      from: 'Achievers Club <noreply@auth.acheiversclubofficial.in>', // change to your verified domain later
       to: process.env.CONTACT_TO_EMAIL || 'hello@achieversnashik.in',
       replyTo: email,
       subject: `[Contact Form] ${subject} — from ${name}`,
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
     // Send auto-reply to the person who submitted
     await resend.emails.send({
-      from: 'Achievers Club <onboarding@resend.dev>',
+      from: 'Achievers Club <noreply@auth.acheiversclubofficial.in>',
       to: email,
       subject: `We got your message, ${name.split(' ')[0]}! 👋`,
       html: `
