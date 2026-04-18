@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     // Send OTP email
     const { error: sendError } = await resend.emails.send({
-      from: 'Achievers Club <onboarding@resend.dev>',
+      from: 'Achievers Club <noreply@auth.acheiversclubofficial.in>',
       to: email,
       subject: `${otp} — Your Achievers Club verification code`,
       html: `
