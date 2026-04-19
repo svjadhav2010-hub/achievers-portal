@@ -809,9 +809,7 @@ export default function HomePage() {
 
                 NOTE: The <script> tag goes in layout.tsx <head> section.
                 Only the <div class="elfsight-app-..."> goes here.
-            ── 
-            <!-- Elfsight Google Reviews | Untitled Google Reviews -->
-            */}
+            ── */}
 
             {/* WIDGET PLACEHOLDER — replace with your elfsight-app div */}
             <div style={{ background: 'white', border: '2px dashed rgba(0,170,200,0.3)', borderRadius: 20, padding: '48px 24px', textAlign: 'center', minHeight: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
@@ -821,6 +819,7 @@ export default function HomePage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
+              <p style={{ fontSize: 14, color: '#aaa', fontWeight: 500 }}>Google Reviews widget will appear here</p>
               <div className="elfsight-app-c95d4d44-5a6b-4869-9716-7f8f8a2cb903" data-elfsight-app-lazy></div>
             </div>
 
@@ -895,6 +894,90 @@ export default function HomePage() {
         </footer>
       </section>
 
+    {/* ─── JSON-LD STRUCTURED DATA ─── */}
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://achieversnashik.in/#organization",
+              "name": "Achievers Club Nashik",
+              "url": "https://achieversnashik.in",
+              "logo": "https://achieversnashik.in/icon.png",
+              "description": "Maharashtra's fastest-growing digital entrepreneurship community. 500+ members learning SMO, building passive income, and growing their networks.",
+              "foundingDate": "2021",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Nashik",
+                "addressRegion": "Maharashtra",
+                "addressCountry": "IN",
+                "postalCode": "422001"
+              },
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "availableLanguage": ["English", "Hindi", "Marathi"]
+              },
+              "sameAs": [
+                "https://www.instagram.com/achieversclubnashik_official/",
+                "https://www.linkedin.com/company/work-from-anywhere-anytime/",
+                "https://www.youtube.com/channel/UCp09BjyDPbOyeJmnc2FRCTg"
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://achieversnashik.in/#website",
+              "url": "https://achieversnashik.in",
+              "name": "Achievers Club Nashik",
+              "description": "Join 500+ digital entrepreneurs. Learn, network, and generate passive income.",
+              "publisher": { "@id": "https://achieversnashik.in/#organization" },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://achieversnashik.in/register",
+                "query-input": "required name=search_term_string"
+              }
+            },
+            {
+              "@type": "LocalBusiness",
+              "name": "Achievers Club Nashik",
+              "image": "https://achieversnashik.in/icon.png",
+              "url": "https://achieversnashik.in",
+              "telephone": "+919146531857",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Nashik",
+                "addressLocality": "Nashik",
+                "addressRegion": "Maharashtra",
+                "postalCode": "422001",
+                "addressCountry": "IN"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 19.9975,
+                "longitude": 73.7898
+              },
+              "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+                "opens": "10:00",
+                "closes": "21:00"
+              },
+              "priceRange": "Free",
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "500"
+              }
+            }
+          ]
+        })
+      }}
+    />
     </div>
   );
 }
+
+/*<div className="elfsight-app-c95d4d44-5a6b-4869-9716-7f8f8a2cb903" data-elfsight-app-lazy></div>*/
