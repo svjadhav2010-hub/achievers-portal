@@ -593,7 +593,7 @@ export default function Dashboard() {
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Senior Manager, Nashik</div>
                   </div>
                 </div>
-                <a href="https://wa.me/9146531857?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="db-btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
+                <a href="https://wa.me/7249822874?text=Hi%20Swayam%2C%20I%27d%20like%20to%20book%20a%20mentorship%20call!" target="_blank" rel="noopener noreferrer" className="db-btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
                   Book Mentorship Call
                 </a>
               </div>
