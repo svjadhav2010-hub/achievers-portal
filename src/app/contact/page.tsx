@@ -263,7 +263,7 @@ export default function ContactPage() {
               {[
                 { icon: '📍', iconBg: 'var(--teal-light)', label: 'Location', value: 'Nashik, Maharashtra', sub: 'India — 422001' },
                 { icon: '📧', iconBg: 'var(--orange-light)', label: 'Email', value: 'hello@achieversnashik.in', sub: 'We reply within 24 hours' },
-                { icon: '📞', iconBg: '#f2f9e6', label: 'Phone', value: '+91 91465 31857', sub: 'Mon – Sat, 10 AM – 7 PM' },
+                { icon: '📞', iconBg: '#f2f9e6', label: 'Phone', value: '+91 72498 22874', sub: 'Mon – Sat, 10 AM – 7 PM' },
                 { icon: '🕐', iconBg: '#fff3f3', label: 'Response time', value: 'Under 24 hours', sub: 'Usually much faster' },
               ].map((item, i) => (
                 <div key={i} className="info-card">
